@@ -1,0 +1,26 @@
+{
+    "players": [
+        {
+            "name": "Alice",
+            "token": "Boot",
+            "balance": 1700,
+            "position": 11,
+            "properties": []
+        },
+        {
+            "name": "Bob",
+            "token": "Ship",
+            "balance": 1625,
+            "position": 5,
+            "properties": []
+        },
+        {
+            "name": "Charlie",
+            "token": "Hatstand",
+            "balance": 1625,
+            "position": 16,
+            "properties": []
+        }
+    ],
+    "bank_balance": 49400
+}
