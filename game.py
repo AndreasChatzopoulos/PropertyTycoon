@@ -15,6 +15,7 @@ class Game:
         self.fines = 0
         self.cards = Cards()
 
+
     def save_game(self, filename="savegame.json"):
         """Saves the current game state to a JSON file."""
         game_data = {
@@ -61,6 +62,7 @@ class Game:
 
         print("✅ Game successfully loaded!")
 
+
     @staticmethod
     def load_players_from_file(filename="players.json"):
         """Loads player names and tokens from a JSON file."""
@@ -82,6 +84,12 @@ class Game:
         print(f"\n🎲 {player.name}'s turn!")
         double = player.move()
 
+        self.handle_position(player)
+        self.player_options(player)
+        self.next_turn(double, player)
+        
+    
+    def handle_position(self, player):
         if player.position in [4, 38]:  # Income Tax & Luxury Tax
             tax_amount = 200 if player.position == 4 else 75
             player.pay_tax(tax_amount)
@@ -111,8 +119,7 @@ class Game:
         else:
             self.handle_property(player)
 
-        self.player_options(player)
-        self.next_turn(double, player)
+
 
     def next_turn(self, rolled_doubles, player):
         """Moves to the next player's turn unless they rolled doubles."""

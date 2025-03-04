@@ -3,24 +3,28 @@
         {
             "name": "Alice",
             "token": "Boot",
-            "balance": 1700,
-            "position": 11,
-            "properties": []
+            "balance": 1480,
+            "position": 28,
+            "properties": [
+                "Yue Fei Square"
+            ]
         },
         {
             "name": "Bob",
             "token": "Ship",
-            "balance": 1625,
-            "position": 5,
-            "properties": []
+            "balance": 1320,
+            "position": 11,
+            "properties": [
+                "Picard Avenue"
+            ]
         },
         {
             "name": "Charlie",
             "token": "Hatstand",
-            "balance": 1625,
-            "position": 16,
+            "balance": 1500,
+            "position": 19,
             "properties": []
         }
     ],
-    "bank_balance": 49400
+    "bank_balance": 50020
 }

@@ -10,8 +10,12 @@ class Card:
 
     def execute(self, player, game):
         """Executes the action associated with the card."""
+        initial_position = player.position
         print(f"\n🃏 {player.name} drew a card: {self.description}")
         self.action(player, game)  # Apply the card effect
+        if player.position != initial_position:
+            print(f"🎲 {player.name} moved to position {player.position}.")
+            game.handle_position(player)  # Handle the new position
 
 
 class CardDeck:

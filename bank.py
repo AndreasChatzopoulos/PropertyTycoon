@@ -46,11 +46,16 @@ class Bank:
 
     def auction_property(self, auction_property, players):
         """Conducts a fair auction with proper bidding rounds."""
+        """Auction should only start if at least 1 other player has passed go"""
+        if not any(player.passed_go for player in players):
+            print("❌ Auction cannot start because no other player has passed GO.")
+            return
+
         print(f"🏦 Auctioning {auction_property.name}!")
 
         highest_bid = 0
         highest_bidder = None
-        active_bidders = [p for p in players if p.balance > 0]
+        active_bidders = [p for p in players if p.balance > 0 and p.passed_go]
 
         while len(active_bidders) > 1:
             for player in active_bidders:
@@ -78,11 +83,18 @@ class Bank:
 
     def sell_property_to_the_bank(self, plr, sold_property):
         if sold_property in plr.owned_properties and sold_property.houses == 0:
-            plr.balance += sold_property.price
+            if sold_property.mortgaged:
+                self.balance -= sold_property.price // 2
+                plr.balance += sold_property.price // 2
+                sold_property.mortgaged = False
+            else:
+                self.balance -= sold_property.price
+                plr.balance += sold_property.price
+                
             plr.owned_properties.remove(sold_property)
             sold_property.owner = None
-            self.balance += sold_property.price  #
             print(f"{plr.name} sold {sold_property.name} to the bank for £{sold_property.price}.")
+        
         else:
             print("Cannot sell property with houses. Sell houses first.")
 
@@ -121,6 +133,7 @@ class Bank:
         mortgage_value = selected_property.price // 2
         plr.balance -= mortgage_value
         self.balance += mortgage_value
+        print(f"{plr.name} mortgaged {selected_property.name} .")
 
     def unmortgage_property(self, plr, selected_property):
         """Allows player to unmortgage a property"""
@@ -136,6 +149,8 @@ class Bank:
         selected_property.mortgaged = False
         plr.balance += mortgage_value
         self.balance -= mortgage_value
+        print(f"{plr.name} unmortgaged {selected_property.name} .")
+
 
     def build(self, number_of_houses, selected_property, plr):  # MAYBE SHOULD BE IN PROPERTY
         total_cost = number_of_houses * selected_property.house_cost

@@ -79,6 +79,13 @@ class Player:
             print(f"{self.name} Rolled a Double!")
             self.jail_turns = 0
             self.in_jail = False
+        elif self.balance >= 50:
+            choice = input(f"{self.name} can pay £50 to get out of jail. Pay? (yes/no): ")
+            if choice.lower() == "yes":
+                self.balance -= 50
+                self.jail_turns = 0
+                self.in_jail = False
+                print(f"{self.name} paid £50 to get out of jail!")
         elif turns:
             print(f"{self.name} Served 3 turns!")
             self.jail_turns = 0
@@ -283,15 +290,17 @@ class Player:
                 self.game.player_options(self)
             elif options[choice] == "Mortgage the property":
                 self.game.bank.mortgage_property(self, selected_property)
-                selected_property.mortgage()
+                self.game.player_options(self)
             elif options[choice] == "Unmortgage the property":
                 self.game.bank.unmortgage_property(self, selected_property)
-                selected_property.unmortgage()
+                self.game.player_options(self)
             elif options[choice] == "Sell houses from the property":
                 self.game.bank.sell_houses_to_the_bank(self, selected_property)
+                self.game.player_options(self)
             elif options[choice] == "Build houses on the property":
                 number_of_houses = input("Enter the numbers of houses you want to build: ")
                 self.game.bank.build(number_of_houses, selected_property, self)
+                self.game.player_options(self)
 
     def move_player_to(self, new_position):
         """Moves the player to a new position, collecting £200 if they pass GO."""
