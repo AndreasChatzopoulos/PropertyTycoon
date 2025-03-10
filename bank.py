@@ -47,7 +47,7 @@ class Bank:
     def auction_property(self, auction_property, players):
         """Conducts a fair auction with proper bidding rounds."""
         """Auction should only start if at least 1 other player has passed go"""
-        if not any(player.passed_go for player in players):
+        if not any(player.passed for player in players):
             print("❌ Auction cannot start because no other player has passed GO.")
             return
 
@@ -55,31 +55,56 @@ class Bank:
 
         highest_bid = 0
         highest_bidder = None
-        active_bidders = [p for p in players if p.balance > 0 and p.passed_go]
+        active_bidders = [p for p in players if p.balance > 0 and p.passed]
 
-        while len(active_bidders) > 1:
-            for player in active_bidders:
-                print(f"{player.name}'s current balance: £{player.balance}")
-                bid = input(f"{player.name}, enter your bid (or 'pass' to exit): ")
-
-                if bid.lower() == "pass":
-                    active_bidders.remove(player)
-                    continue
-
-                try:
-                    bid = int(bid)
-                    if bid > player.balance:
-                        print("❌ You can't bid more than your balance!")
-                    elif bid > highest_bid:
-                        highest_bid = bid
-                        highest_bidder = player
-                except ValueError:
-                    print("❌ Invalid input, try again.")
+        highest_bidder = self.bid_property(auction_property, active_bidders)
 
         if highest_bidder:
             highest_bidder.balance -= highest_bid
             auction_property.transfer_property(highest_bidder)
             print(f"🎉 {highest_bidder.name} won {auction_property.name} for £{highest_bid}")
+
+    def bid_property(self, active_bidders, highest_bid=0):
+        def valid_bid(bid, player):
+            try:
+                if bid > player.balance:
+                    print("❌ You can't bid more than your balance!")
+                    return False
+                elif bid <= highest_bid:
+                    print("❌ You must bid higher than the current highest bid!")
+                    return False
+                return True
+            except ValueError:
+                print("❌ Invalid input, try again.")
+                return False
+
+        for player in active_bidders:
+            print(f"{player.name}'s current balance: £{player.balance}")
+
+            if highest_bid > player.balance:
+                print(f"❌ {player.name} only has £{player.balance} and the current highest bid is £{highest_bid}.")
+                active_bidders.remove(player)
+                continue
+            
+            while True:
+                bid = input(f"{player.name}, enter your bid (or '0' to exit): ")
+                if valid_bid(bid, player):
+                    break
+
+            if int(bid) == 0:
+                active_bidders.remove(player)
+                continue
+
+            highest_bid = int(bid)
+            
+
+        if len(active_bidders) == 1:
+            return active_bidders[0]
+        elif len(active_bidders) == 0:
+            return None
+        else:
+            return self.bid_property(active_bidders, highest_bid)
+
 
     def sell_property_to_the_bank(self, plr, sold_property):
         if sold_property in plr.owned_properties and sold_property.houses == 0:
@@ -172,3 +197,15 @@ class Bank:
         plr.balance -= total_cost
         self.balance += total_cost
         print(f"{selected_property.owner.name} built {number_of_houses} houses on {selected_property.name}")
+
+    def pay_player(self, player, amount):
+        """Pays a player the specified amount."""
+        self.balance -= amount
+        player.balance += amount
+        print(f"💰 {player.name} received £{amount}.")
+
+    def receive_payment(self, player, amount):
+        """Receives payment from a player."""
+        self.balance += amount
+        player.balance -= amount
+        print(f"💰 {player.name} paid £{amount}.")
