@@ -47,7 +47,8 @@ class Bank:
     def auction_property(self, auction_property, players):
         """Conducts a fair auction with proper bidding rounds."""
         """Auction should only start if at least 1 other player has passed go"""
-        if not any(player.passed for player in players):
+        #count number of players who have player.passed = True
+        if [player.passed for player in players].count(True) <= 1:        
             print("❌ Auction cannot start because no other player has passed GO.")
             return
 
@@ -57,20 +58,22 @@ class Bank:
         highest_bidder = None
         active_bidders = [p for p in players if p.balance > 0 and p.passed]
 
-        highest_bidder = self.bid_property(auction_property, active_bidders)
+        highest_bidder = self.bid_property(active_bidders)
 
         if highest_bidder:
             highest_bidder.balance -= highest_bid
-            auction_property.transfer_property(highest_bidder)
+            auction_property.owner = highest_bidder
             print(f"🎉 {highest_bidder.name} won {auction_property.name} for £{highest_bid}")
 
     def bid_property(self, active_bidders, highest_bid=0):
         def valid_bid(bid, player):
+            if bid.lower() == "exit":
+                return True
             try:
-                if bid > player.balance:
+                if int(bid) > player.balance:
                     print("❌ You can't bid more than your balance!")
                     return False
-                elif bid <= highest_bid:
+                elif int(bid) <= highest_bid:
                     print("❌ You must bid higher than the current highest bid!")
                     return False
                 return True
@@ -87,11 +90,13 @@ class Bank:
                 continue
             
             while True:
-                bid = input(f"{player.name}, enter your bid (or '0' to exit): ")
+                bid = input(f"{player.name}, enter your bid (or 'exit' to exit): ")
                 if valid_bid(bid, player):
+                    if bid != "exit":
+                        bid = int(bid)
                     break
 
-            if int(bid) == 0:
+            if bid == 'exit':
                 active_bidders.remove(player)
                 continue
 

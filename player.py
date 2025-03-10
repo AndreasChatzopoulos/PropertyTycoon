@@ -12,7 +12,7 @@ class Player:
         self.owned_properties = []
         self.passed = False
         self.in_jail = False
-        self.position = 0
+        self.position = 1
         self.get_out_of_jail_cards = 0
         self.jail_turns = 0
         self.consecutive_doubles = 0
@@ -307,6 +307,7 @@ class Player:
         if new_position < self.position:
             print(f"🛤️ {self.name} passes GO and collects £200!")
             self.balance += 200
+            self.passed = True
 
         self.position = new_position
         print(f"🚀 {self.name} moves to position {self.position}.")

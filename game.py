@@ -90,7 +90,7 @@ class Game:
         
     
     def handle_position(self, player):
-        if player.position in [4, 38]:  # Income Tax & Luxury Tax
+        if player.position in [5, 39]:  # Income Tax & Luxury Tax
             tax_amount = 200 if player.position == 4 else 75
             player.pay_tax(tax_amount)
             self.fines += tax_amount
