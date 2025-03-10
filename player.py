@@ -19,6 +19,7 @@ class Player:
 
     def roll_dice(self):
         die1, die2 = random.randint(1, 6), random.randint(1, 6)
+        print(f"{self.name} rolls {die1} and {die2} for a total of ({die1 + die2})")
         double = (die1 == die2)
         return die1, die2, double
 
@@ -32,23 +33,28 @@ class Player:
                 return
             else:
                 if self.in_jail:
-                    self.get_out_of_jail()
+                    self.get_out_of_jail(True, False)
+                    self.consecutive_doubles = 0
+                    return
         elif self.in_jail:
             self.jail_turns += 1
-            if self.jail_turns >= 3:
-                self.get_out_of_jail(False, True)
-            else:
+            self.get_out_of_jail(False, self.jail_turns>=3)
+            if self.in_jail:
                 print(f"{self.name} stays in jail (Turn {self.jail_turns})")
-                return self.consecutive_doubles > 0
-
+                self.consecutive_doubles = 0
+                return
+        else:
+            self.consecutive_doubles = 0
+        
         original_position = self.position
-        self.position = (self.position + die1 + die2) % 40
-        print(f"{self.name} moves to position {self.position}")
+        self.position = (self.position + die1 + die2) % 41
+        print(f"{self.name} moves from position {original_position} to position {self.position}")
         if self.position < original_position:
             self.passed = True
             self.balance += 200
             self.game.bank.balance -= 200
             print(f"🛤️ {self.name} passed GO and collected £200!")
+        return
 
     def buy_property(self, property_at_position):
         # Deduct money from the player
@@ -68,15 +74,14 @@ class Player:
         self.position = 11
         print(f"{self.name} has been sent to jail!")
 
-    def get_out_of_jail(self, double=False, turns=False):
-
-        if self.get_out_of_jail_cards > 0:
-            print(f"{self.name} uses a Get Out of Jail Free card!")
-            self.get_out_of_jail_cards -= 1
+    def get_out_of_jail(self, double, turns):
+        if double:
+            print(f"{self.name} Rolled a Double!")
             self.jail_turns = 0
             self.in_jail = False
-        elif double:
-            print(f"{self.name} Rolled a Double!")
+        elif self.get_out_of_jail_cards > 0:
+            print(f"{self.name} uses a Get Out of Jail Free card!")
+            self.get_out_of_jail_cards -= 1
             self.jail_turns = 0
             self.in_jail = False
         elif self.balance >= 50:
@@ -285,21 +290,18 @@ class Player:
             if choice == option_number:  # Exit
                 print("🏠 Exiting property management.")
                 return
-            elif options[choice] == "Sell the property to the bank":
-                self.game.bank.sell_property_to_the_bank(self, selected_property)
-                self.game.player_options(self)
-            elif options[choice] == "Mortgage the property":
-                self.game.bank.mortgage_property(self, selected_property)
-                self.game.player_options(self)
-            elif options[choice] == "Unmortgage the property":
-                self.game.bank.unmortgage_property(self, selected_property)
-                self.game.player_options(self)
-            elif options[choice] == "Sell houses from the property":
-                self.game.bank.sell_houses_to_the_bank(self, selected_property)
-                self.game.player_options(self)
-            elif options[choice] == "Build houses on the property":
-                number_of_houses = input("Enter the numbers of houses you want to build: ")
-                self.game.bank.build(number_of_houses, selected_property, self)
+            else:
+                if options[choice] == "Sell the property to the bank":
+                    self.game.bank.sell_property_to_the_bank(self, selected_property)
+                elif options[choice] == "Mortgage the property":
+                    self.game.bank.mortgage_property(self, selected_property)
+                elif options[choice] == "Unmortgage the property":
+                    self.game.bank.unmortgage_property(self, selected_property)
+                elif options[choice] == "Sell houses from the property":
+                    self.game.bank.sell_houses_to_the_bank(self, selected_property)
+                elif options[choice] == "Build houses on the property":
+                    number_of_houses = input("Enter the numbers of houses you want to build: ")
+                    self.game.bank.build(number_of_houses, selected_property, self)
                 self.game.player_options(self)
 
     def move_player_to(self, new_position):
@@ -310,7 +312,8 @@ class Player:
             self.passed = True
 
         self.position = new_position
-        print(f"🚀 {self.name} moves to position {self.position}.")
+        if self.position != 1:
+            print(f"🚀 {self.name} moves to position {self.position}.")
 
     def assess_property_repair(self, game, house_cost, hotel_cost):
         """Charges players for property repairs."""

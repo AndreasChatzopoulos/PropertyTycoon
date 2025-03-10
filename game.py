@@ -82,11 +82,14 @@ class Game:
         """Handles a single player's turn """
         player = self.players[self.current_player_index]
         print(f"\n🎲 {player.name}'s turn!")
-        double = player.move()
+        print(f"💰 Balance: £{player.balance}")
+        player.move()
 
         self.handle_position(player)
         self.player_options(player)
-        self.next_turn(double, player)
+        if player.position == 11 and player.in_jail:
+            player.consecutive_doubles = 0
+        self.next_turn(player)
         
     
     def handle_position(self, player):
@@ -121,10 +124,9 @@ class Game:
 
 
 
-    def next_turn(self, rolled_doubles, player):
+    def next_turn(self, player):
         """Moves to the next player's turn unless they rolled doubles."""
-        if not rolled_doubles:
-            player.consecutive_doubles = 0
+        if player.consecutive_doubles == 0:
             self.current_player_index = (self.current_player_index + 1) % len(self.players)
         else:
             self.current_player_index = (self.current_player_index + 0) % len(self.players)
@@ -182,8 +184,9 @@ class Game:
                 elif choice == 4:
                     self.load_game()
                 elif choice == 5:
-                    print(f"🎲 {player.name} has ended their turn.")
-                    return  # Exit loop to continue game
+                    print(f"🎲 {player.name} has ended their turn with a balance of £{player.balance}.")
+                    print(r"-------------------------------------------------")
+                    self.next_turn(player)  # Exit loop to continue game
                 else:
                     print("❌ Invalid choice. Try again.")
             except ValueError:

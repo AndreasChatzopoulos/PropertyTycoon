@@ -69,11 +69,11 @@ class Cards:
             Card("Bank pays you a dividend of £50", lambda p, g: setattr(p, 'balance', p.balance + 50)),
             Card("Advance to Turing Heights", lambda p, g: p.move_player_to(40)),  # Fix: Uses board position
             Card("Advance to Han Xin Gardens. If you pass GO, collect £200",
-                 lambda p, g: g.handle_go_pass(p, 25)),  # Fix: Uses method to check GO
+                 lambda p, g: p.move_player_to(25)),  # Fix: Uses method to check GO
             Card("Fined £15 for speeding", lambda p, g: setattr(p, 'balance', p.balance - 15)),
             Card("Pay university fees of £150", lambda p, g: setattr(p, 'balance', p.balance - 150)),
             Card("Take a trip to Hove station. If you pass GO collect £200",
-                 lambda p, g: g.handle_go_pass(p, 16)),  # Fix: Uses method to check GO
+                 lambda p, g: p.move_player_to(16)),  # Fix: Uses method to check GO
             Card("You are assessed for repairs, £40/house, £115/hotel",
                  lambda p, g: p.assess_property_repair(g, 40, 115)),
             Card("Go back 3 spaces", lambda p, g: setattr(p, 'position', max(1, p.position - 3))),

@@ -54,16 +54,14 @@ class Bank:
 
         print(f"🏦 Auctioning {auction_property.name}!")
 
-        highest_bid = 0
         highest_bidder = None
-        active_bidders = [p for p in players if p.balance > 0 and p.passed]
+        active_bidders = [p for p in players if p.balance >= 0 and p.passed]
 
-        highest_bidder = self.bid_property(active_bidders)
+        highest_bidder, highest_bid = self.bid_property(active_bidders)
 
-        if highest_bidder:
-            highest_bidder.balance -= highest_bid
-            auction_property.owner = highest_bidder
-            print(f"🎉 {highest_bidder.name} won {auction_property.name} for £{highest_bid}")
+        highest_bidder.balance -= highest_bid
+        auction_property.transfer_property(highest_bidder)
+        print(f"🎉 {highest_bidder.name} won {auction_property.name} for £{highest_bid}")
 
     def bid_property(self, active_bidders, highest_bid=0):
         def valid_bid(bid, player):
@@ -82,6 +80,8 @@ class Bank:
                 return False
 
         for player in active_bidders:
+            if len(active_bidders) == 1:
+                return active_bidders[0], highest_bid
             print(f"{player.name}'s current balance: £{player.balance}")
 
             if highest_bid > player.balance:
@@ -101,14 +101,8 @@ class Bank:
                 continue
 
             highest_bid = int(bid)
-            
 
-        if len(active_bidders) == 1:
-            return active_bidders[0]
-        elif len(active_bidders) == 0:
-            return None
-        else:
-            return self.bid_property(active_bidders, highest_bid)
+        return self.bid_property(active_bidders, highest_bid)
 
 
     def sell_property_to_the_bank(self, plr, sold_property):
