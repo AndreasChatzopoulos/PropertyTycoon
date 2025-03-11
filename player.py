@@ -230,7 +230,7 @@ class Player:
         print(f"💔 {self.name} has left the game.")
 
     def return_properties_to_bank(self):
-        for prop in self.owned_properties:
+        for prop in self.owned_properties[:]:
             self.owned_properties.remove(prop)
             self.game.bank.properties.append(prop)
             prop.owner = None

@@ -19,21 +19,21 @@ class Property:
 
     def calculate_rent(self, dice_roll=0):
         """Determines rent based on property type, ownership, and houses/hotels."""
-        if self.group in Property.color_group_sizes:
-            if self.check_completion() and self.houses == 0:
-                return self.rent[0] * 2  # Double rent for full set
-            return self.rent[self.houses]
-
+        if self.group == "Utilities":
+            if self.owner:
+                utilities_count = sum(1 for p in self.owner.owned_properties if p.group == "Utilities")
+                multiplier = 4 if utilities_count == 1 else 10
+                return dice_roll * multiplier if dice_roll else 0
+        
         elif self.group == "Station":
             if self.owner:
                 station_count = sum(1 for p in self.owner.owned_properties if p.group == "Station")
                 return [25, 50, 100, 200][station_count - 1]
 
-        elif self.group == "Utilities":
-            if self.owner:
-                utilities_count = sum(1 for p in self.owner.owned_properties if p.group == "Utilities")
-                multiplier = 4 if utilities_count == 1 else 10
-                return dice_roll * multiplier
+        elif self.group in Property.color_group_sizes:
+            if self.check_completion() and self.houses == 0:
+                return self.rent[0] * 2  # Double rent for full set
+            return self.rent[self.houses]
 
         return 0
 
