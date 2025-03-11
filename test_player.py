@@ -222,5 +222,79 @@ class TestPlayer(unittest.TestCase):
     
     # manage_property(self)
 
+class TestPlayerBotMethods(unittest.TestCase):
+    def setUp(self):
+        self.mock_game = Mock()
+        self.mock_game.bank.balance = 10000
+        self.player = Player("Bot", "Car", "Basic Bot", self.mock_game)
+        self.player.balance = 1000  # Setting balance for test cases
+
+    def test_bot_bid_lower_than_property_value(self):
+        mock_property = Mock()
+        mock_property.price = 200
+        highest_bid = 150
+        result = self.player.bot_bid(highest_bid, mock_property)
+        self.assertEqual(result, "156")  # 150 + (200-150)*0.1 + 1 = 156
+
+    def test_bot_bid_higher_than_property_value(self):
+        mock_property = Mock()
+        mock_property.price = 200
+        highest_bid = 220
+        result = self.player.bot_bid(highest_bid, mock_property)
+        self.assertEqual(result, "240")  # 220 + (200 * 0.1) = 240
+
+    def test_bot_bid_exceeds_1_5x_property_value(self):
+        mock_property = Mock()
+        mock_property.price = 200
+        highest_bid = 290  # 1.5 * 200 = 300 max, bid would go over
+        result = self.player.bot_bid(highest_bid, mock_property)
+        self.assertEqual(result, "exit")
+
+    def test_bot_bid_exceeds_balance(self):
+        self.player.balance = 250
+        mock_property = Mock()
+        mock_property.price = 500
+        highest_bid = 400
+        result = self.player.bot_bid(highest_bid, mock_property)
+        self.assertEqual(result, "exit")
+
+    def test_bot_buy_property_affordable(self):
+        mock_property = Mock()
+        mock_property.price = 500
+        result = self.player.bot_buy_property(mock_property)
+        self.assertEqual(result, "yes")
+
+    def test_bot_buy_property_unaffordable(self):
+        self.player.balance = 400
+        mock_property = Mock()
+        mock_property.price = 500
+        result = self.player.bot_buy_property(mock_property)
+        self.assertEqual(result, "no")
+
+    def test_bot_get_out_of_jail_can_afford(self):
+        self.player.balance = 100
+        result = self.player.bot_get_out_of_jail()
+        self.assertEqual(result, "yes")
+
+    def test_bot_get_out_of_jail_cannot_afford(self):
+        self.player.balance = 30
+        result = self.player.bot_get_out_of_jail()
+        self.assertEqual(result, "no")
+
+    def test_bot_avoid_bankruptcy(self):
+        options = ["Sell Property", "Mortgage Property", "Declare Bankruptcy"]
+        amount_due = 500
+        creditor = Mock()
+        result = self.player.bot_avoid_bankruptcy(options, amount_due, creditor)
+        self.assertEqual(result, 3)  # Declares bankruptcy
+
+    def test_bot_options(self):
+        result = self.player.bot_options()
+        self.assertEqual(result, 5)
+
+    def test_bot_trade(self):
+        result = self.player.bot_trade([], [], 0, 0)
+        self.assertEqual(result, "no")
+
 if __name__ == "__main__":
     unittest.main()
