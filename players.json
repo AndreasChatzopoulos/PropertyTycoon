@@ -1,7 +1,7 @@
 {
     "players": [
-        {"name": "Alice", "token": "Boot"},
-        {"name": "Bob", "token": "Ship"},
-        {"name": "Charlie", "token": "Hatstand"}
+        {"name": "Alice", "token": "Boot", "identity": "Human"},
+        {"name": "Bob", "token": "Ship", "identity": "Human"},
+        {"name": "Charlie", "token": "Hatstand", "identity": "Basic Bot"}
     ]
 }

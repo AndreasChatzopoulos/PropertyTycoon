@@ -7,8 +7,8 @@ import os
 
 class Game:
 
-    def __init__(self, player_names, tokens):
-        self.players = [Player(name, token, self) for name, token in zip(player_names, tokens)]
+    def __init__(self, player_names, tokens, identities):
+        self.players = [Player(name, token, identity, self) for name, token, identity in zip(player_names, tokens, identities)]
         self.current_player_index = 0
         self.running = True
         self.bank = Bank()
@@ -70,13 +70,14 @@ class Game:
 
         if not os.path.exists(filepath):
             print("❌ Player file not found! Starting with default players.")
-            return ["Alice", "Bob"], ["Boot", "Ship"]
+            return ["Alice", "Bob"], ["Boot", "Ship"], ["Human", "Human"]
 
         with open(filepath, "r") as f:
             data = json.load(f)
             player_names = [p["name"] for p in data["players"]]
             player_tokens = [p["token"] for p in data["players"]]
-            return player_names, player_tokens
+            player_identities = [p["identity"] for p in data["players"]]
+            return player_names, player_tokens, player_identities
 
     def play_turn(self):
         """Handles a single player's turn """
@@ -153,7 +154,10 @@ class Game:
         print(f"{player.name} landed on {property_at_position.name}. It costs £{property_at_position.price}.")
 
         if player.balance >= property_at_position.price and player.passed:
-            choice = input("Do you want to buy it? (yes/no): ").strip().lower()
+            if player.identity == "Human":
+                choice = input("Do you want to buy it? (yes/no): ").strip().lower()
+            else:
+                choice = player.bot_buy_property(property_at_position)
 
             if choice == "yes":
                 player.buy_property(property_at_position)
@@ -173,7 +177,10 @@ class Game:
             print("5️⃣  End Turn")
 
             try:
-                choice = int(input("Enter the number of your choice: "))
+                if player.identity == "Human":
+                    choice = int(input("Enter the number of your choice: "))
+                else:
+                    choice = player.bot_options()
                 if choice == 1:
                     player.manage_property()
                 elif choice == 2:
@@ -261,7 +268,10 @@ class Game:
         print(f"  {other_player.name} offers: " + ", ".join([p.name for p in request_properties]) + (
             f" + £{request_money}" if request_money else ""))
 
-        confirm = input(f"{other_player.name}, do you accept this trade? (yes/no): ").strip().lower()
+        if other_player.identity == "Human":
+            confirm = input(f"{other_player.name}, do you accept this trade? (yes/no): ").strip().lower()
+        else:
+            confirm = other_player.bot_trade(offer_properties, request_properties, offer_money, request_money)
         if confirm == "yes":
             self.execute_trade(current_player, other_player, offer_properties, request_properties, offer_money,
                                request_money)

@@ -3,10 +3,11 @@ import random
 
 
 class Player:
-    def __init__(self, name, token, game):
+    def __init__(self, name, token, identity, game):
         """Player initialization with reference to the existing Game instance."""
         self.name = name
         self.token = token
+        self.identity = identity
         self.game = game  # ✅ Fix: Store game reference instead of creating a new game
         self.balance = 1500
         self.owned_properties = []
@@ -85,7 +86,10 @@ class Player:
             self.jail_turns = 0
             self.in_jail = False
         elif self.balance >= 50:
-            choice = input(f"{self.name} can pay £50 to get out of jail. Pay? (yes/no): ")
+            if self.identity == "Human":
+                choice = input(f"{self.name} can pay £50 to get out of jail. Pay? (yes/no): ")
+            else:
+                choice = self.bot_get_out_of_jail()
             if choice.lower() == "yes":
                 self.balance -= 50
                 self.jail_turns = 0
@@ -152,16 +156,16 @@ class Player:
 
             options = []  # Produces the options dynamically so there is no redundancy
             if any(p.houses > 0 for p in self.owned_properties):  # Checks if the player has any properties with houses
-                options.append("1️⃣  Sell Houses/Hotels")
+                options.append("Sell Houses/Hotels")
             if any(not p.mortgaged for p in
                    self.owned_properties):  # Checks if the player has any unmortgaged properties
-                options.append("2️⃣  Mortgage Properties")
+                options.append("Mortgage Properties")
             if any(p.houses == 0 for p in
                    self.owned_properties):  # Checks if the player has any properties available to sell
-                options.append("3️⃣  Sell Properties to the Bank")
+                options.append("Sell Properties to the Bank")
             if len(self.owned_properties) > 1:  # Checks if the player has any available properties to trade
-                options.append("4️⃣  Offer a Trade")
-            options.append("5️⃣  Declare Bankruptcy")
+                options.append("Offer a Trade")
+            options.append("Declare Bankruptcy")
 
             # Print available choices
             for i, option in enumerate(options, 1):
@@ -169,7 +173,10 @@ class Player:
 
             # Get player's choice
             try:
-                choice = int(input("Enter the number of your choice: "))
+                if self.identity == "Human":
+                    choice = int(input("Enter the number of your choice: "))
+                else:
+                    choice = self.bot_avoid_bankruptcy(options, amount_due, creditor)
                 if choice < 1 or choice > len(options):
                     print("Invalid choice. Try again.")
                     continue
@@ -326,3 +333,46 @@ class Player:
             print(f"🏚️ {self.name} pays £{total_cost} for property repairs.")
             self.balance -= total_cost
             game.fines += total_cost
+
+    def bot_bid(self, highest_bid, property):
+        #The intermediate bot will bid 10% of the difference between the highest bid and the property value, up to 1.5x the property value.
+        if self.identity == "Basic Bot":
+            if highest_bid < property.price:
+                bid = (highest_bid + (property.price - highest_bid) * 0.1) + 1
+            else:
+                bid = highest_bid + (property.price * 0.1)
+            bid = int(bid)
+            if bid > self.balance or bid > property.price * 1.5:
+                return "exit"
+        else:
+            bid = "exit"
+        return str(bid)
+    
+    def bot_buy_property(self, property):
+        if self.identity == "Basic Bot":
+            if self.balance > property.price:
+                return "yes"
+            else:
+                return "no"
+        else:
+            return "no"
+        
+    def bot_get_out_of_jail(self):
+        if self.identity == "Basic Bot" and self.balance >= 50:
+            return "yes"
+        return "no"
+    
+    def bot_avoid_bankruptcy(self, options, amount_due, creditor):
+        if self.identity == "Basic Bot":
+            option = options.index("Declare Bankruptcy") + 1
+        return option
+    
+    def bot_options(self):
+        if self.identity == "Basic Bot":
+            return 5
+        return 5
+    
+    def bot_trade(self, offer_properties, request_properties, offer_money, request_money):
+        if self.identity == "Basic Bot":
+            return "no"
+        return "no"

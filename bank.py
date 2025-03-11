@@ -57,13 +57,13 @@ class Bank:
         highest_bidder = None
         active_bidders = [p for p in players if p.balance >= 0 and p.passed]
 
-        highest_bidder, highest_bid = self.bid_property(active_bidders)
+        highest_bidder, highest_bid = self.bid_property(active_bidders, auction_property)
 
         highest_bidder.balance -= highest_bid
         auction_property.transfer_property(highest_bidder)
         print(f"🎉 {highest_bidder.name} won {auction_property.name} for £{highest_bid}")
 
-    def bid_property(self, active_bidders, highest_bid=0):
+    def bid_property(self, active_bidders, property, highest_bid=0):
         def valid_bid(bid, player):
             if bid.lower() == "exit":
                 return True
@@ -89,12 +89,21 @@ class Bank:
                 active_bidders.remove(player)
                 continue
             
-            while True:
-                bid = input(f"{player.name}, enter your bid (or 'exit' to exit): ")
-                if valid_bid(bid, player):
-                    if bid != "exit":
-                        bid = int(bid)
-                    break
+            if player.identity == "Human":
+                while True:
+                    bid = input(f"{player.name}, enter your bid (or 'exit' to exit): ")
+                    if valid_bid(bid, player):
+                        if bid != "exit":
+                            bid = int(bid)
+                        break
+            else:
+                bid = player.bot_bid(highest_bid, property)
+                # The bot only gets one chance to submit a valid bid. Otherwise, it will pass. This is to prevent the bot from getting stuck in an infinite loop.
+                print(f"{player.name} bids {bid}.")
+                if not valid_bid(bid, player):
+                    print(f"{player.name} tried to bid an invalid amount. Since {player.name} is a bot, it will pass.")
+                    bid = "exit"
+                    continue
 
             if bid == 'exit':
                 active_bidders.remove(player)
@@ -102,7 +111,7 @@ class Bank:
 
             highest_bid = int(bid)
 
-        return self.bid_property(active_bidders, highest_bid)
+        return self.bid_property(active_bidders, property, highest_bid)
 
 
     def sell_property_to_the_bank(self, plr, sold_property):
