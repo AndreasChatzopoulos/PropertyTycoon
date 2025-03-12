@@ -229,6 +229,7 @@ class TestPlayerBotMethods(unittest.TestCase):
         self.player = Player("Bot", "Car", "Basic Bot", self.mock_game)
         self.player.balance = 1000  # Setting balance for test cases
 
+    # bot_bid(self, highest_bid, property)
     def test_bot_bid_lower_than_property_value(self):
         mock_property = Mock()
         mock_property.price = 200
@@ -258,6 +259,7 @@ class TestPlayerBotMethods(unittest.TestCase):
         result = self.player.bot_bid(highest_bid, mock_property)
         self.assertEqual(result, "exit")
 
+    # bot_buy_property(self, property)
     def test_bot_buy_property_affordable(self):
         mock_property = Mock()
         mock_property.price = 500
@@ -271,6 +273,7 @@ class TestPlayerBotMethods(unittest.TestCase):
         result = self.player.bot_buy_property(mock_property)
         self.assertEqual(result, "no")
 
+    # bot_get_out_of_jail(self)
     def test_bot_get_out_of_jail_can_afford(self):
         self.player.balance = 100
         result = self.player.bot_get_out_of_jail()
@@ -281,6 +284,7 @@ class TestPlayerBotMethods(unittest.TestCase):
         result = self.player.bot_get_out_of_jail()
         self.assertEqual(result, "no")
 
+    # bot_avoid_bankruptcy(self, options, amount_due, creditor)
     def test_bot_avoid_bankruptcy(self):
         options = ["Sell Property", "Mortgage Property", "Declare Bankruptcy"]
         amount_due = 500
@@ -288,10 +292,12 @@ class TestPlayerBotMethods(unittest.TestCase):
         result = self.player.bot_avoid_bankruptcy(options, amount_due, creditor)
         self.assertEqual(result, 3)  # Declares bankruptcy
 
+    # bot_options(self)
     def test_bot_options(self):
         result = self.player.bot_options()
         self.assertEqual(result, 5)
 
+    # bot_trade(self, offer_properties, request_properties, offer_money, request_money)
     def test_bot_trade(self):
         result = self.player.bot_trade([], [], 0, 0)
         self.assertEqual(result, "no")
