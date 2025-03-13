@@ -95,7 +95,7 @@ class Game:
     
     def handle_position(self, player):
         if player.position in [5, 39]:  # Income Tax & Luxury Tax
-            tax_amount = 200 if player.position == 4 else 75
+            tax_amount = 200 if player.position == 5 else 75
             player.pay_tax(tax_amount)
             self.fines += tax_amount
 
@@ -273,6 +273,8 @@ class Game:
         else:
             confirm = other_player.bot_trade(offer_properties, request_properties, offer_money, request_money)
         if confirm == "yes":
+            print(f"Requested properties before trade execution: {request_properties}")
+            print(f"Executing trade with: {offer_properties}, {request_properties}, {offer_money}, {request_money}")
             self.execute_trade(current_player, other_player, offer_properties, request_properties, offer_money,
                                request_money)
         else:
