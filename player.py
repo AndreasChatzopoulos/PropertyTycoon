@@ -48,7 +48,7 @@ class Player:
             self.consecutive_doubles = 0
         
         original_position = self.position
-        self.position = (self.position + die1 + die2) % 41
+        self.position = ((self.position - 1 + die1 + die2) % 40) + 1
         print(f"{self.name} moves from position {original_position} to position {self.position}")
         if self.position < original_position:
             self.passed = True
