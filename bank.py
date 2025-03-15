@@ -1,4 +1,5 @@
 from property import Property
+from collections import deque
 
 
 class Bank:
@@ -78,15 +79,17 @@ class Bank:
             except ValueError:
                 print("❌ Invalid input, try again.")
                 return False
+            
+        bidding_queue = deque(active_bidders)
 
-        for player in active_bidders:
-            if len(active_bidders) == 1:
-                return active_bidders[0], highest_bid
+        while len(bidding_queue) > 1:
+
+            player = bidding_queue.popleft()
+
             print(f"{player.name}'s current balance: £{player.balance}")
 
             if highest_bid > player.balance:
                 print(f"❌ {player.name} only has £{player.balance} and the current highest bid is £{highest_bid}.")
-                active_bidders.remove(player)
                 continue
             
             if player.identity == "Human":
@@ -103,15 +106,15 @@ class Bank:
                 if not valid_bid(bid, player):
                     print(f"{player.name} tried to bid an invalid amount. Since {player.name} is a bot, it will pass.")
                     bid = "exit"
-                    continue
 
             if bid == 'exit':
-                active_bidders.remove(player)
+                print(f"❌ {player.name} has exited the auction.")
                 continue
 
             highest_bid = int(bid)
+            bidding_queue.append(player)
 
-        return self.bid_property(active_bidders, property, highest_bid)
+        return bidding_queue[0], highest_bid
 
 
     def sell_property_to_the_bank(self, plr, sold_property):
