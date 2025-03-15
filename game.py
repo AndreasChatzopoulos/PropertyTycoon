@@ -287,9 +287,15 @@ class Game:
 
         # Transfer money
         if offer_money > 0:
+            if current_player.balance < offer_money:
+                print("❌ Insufficient funds to complete the trade.")
+                return
             current_player.balance -= offer_money
             other_player.balance += offer_money
         if request_money > 0:
+            if other_player.balance < request_money:
+                print("❌ Insufficient funds to complete the trade.")
+                return
             other_player.balance -= request_money
             current_player.balance += request_money
 
