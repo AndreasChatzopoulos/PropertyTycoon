@@ -211,12 +211,20 @@ class Bank:
 
     def pay_player(self, player, amount):
         """Pays a player the specified amount."""
-        self.balance -= amount
-        player.balance += amount
-        print(f"💰 {player.name} received £{amount}.")
+        if self.balance >= amount:
+            self.balance -= amount
+            player.balance += amount
+            print(f"💰 {player.name} received £{amount}.")
+        else:
+            print(f"❌ {self.name} doesn’t have enough money to pay £{amount_due}! Selling assets...")
+            self.avoid_bankruptcy(amount, player)
 
     def receive_payment(self, player, amount):
         """Receives payment from a player."""
-        self.balance += amount
-        player.balance -= amount
-        print(f"💰 {player.name} paid £{amount}.")
+        if player.balance >= amount:
+            self.balance += amount
+            player.balance -= amount
+            print(f"💰 {player.name} paid £{amount}.")
+        else:
+            print(f"❌ {player.name} doesn’t have enough money to pay £{amount}! Selling assets...")
+            player.avoid_bankruptcy(amount, self)
