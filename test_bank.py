@@ -56,34 +56,62 @@ class TestBank(unittest.TestCase):
         self.property.transfer_property.assert_called_once_with(self.player2)
 
     # bid_property(self, active_bidders, property, highest_bid=0)
-    def test_single_bidder_wins(self):
-        """If only one valid bidder exists, they win automatically."""
-        winner, final_bid = self.bank.bid_property([self.player1], self.property)
+    @patch("builtins.input", side_effect=["500", "exit"])  
+    def test_bid_property_human_bidding(self, mock_input):
+        """Test human players bidding on a property"""
+        active_bidders = [self.player1, self.player2]
+        winner, final_bid = self.bank.bid_property(active_bidders, self.property)
+
         self.assertEqual(winner, self.player1)
+        self.assertEqual(final_bid, 500)
+
+    @patch("builtins.input", side_effect=["200", "600", "exit"])  
+    def test_bid_property_multiple_human_bids(self, mock_input):
+        """Test multiple bids from human players"""
+        active_bidders = [self.player1, self.player2]
+        winner, final_bid = self.bank.bid_property(active_bidders, self.property)
+
+        self.assertEqual(winner, self.player2)
+        self.assertEqual(final_bid, 600)
+    
+    @patch("builtins.input", side_effect=["300", "exit"])
+    def test_bid_property_one_exit(self, mock_input):
+        """Test when one player exits the auction"""
+        active_bidders = [self.player1, self.player2]
+        winner, final_bid = self.bank.bid_property(active_bidders, self.property)
+
+        self.assertEqual(winner, self.player1)
+        self.assertEqual(final_bid, 300)
+    
+    @patch("builtins.input", side_effect=["exit", "exit"])
+    def test_bid_property_all_exit(self, mock_input):
+        """Test when all players exit the auction"""
+        active_bidders = [self.player1, self.player2]
+        winner, final_bid = self.bank.bid_property(active_bidders, self.property)
+
+        # The last remaining player should win by default with the starting bid
+        self.assertEqual(winner, self.player2)
         self.assertEqual(final_bid, 0)
+    
+    @patch("builtins.input", side_effect=["450", "exit"])
+    def test_bid_property_invalid_bid_then_exit(self, mock_input):
+        """Test invalid bid (higher than balance) and exit"""
+        self.player1.balance = 400  # Lower balance to make bid invalid
+        active_bidders = [self.player1, self.player2]
 
-    # @patch("builtins.input", side_effect=["100", "200", "exit"]) 
-    # def test_highest_bid_wins(self, mock_input):
-    #     """Ensure the highest bidder wins the auction."""
-    #     winner, final_bid = self.bank.bid_property([self.player1, self.player2], self.property)
+        winner, final_bid = self.bank.bid_property(active_bidders, self.property)
 
-    #     self.assertEqual(winner.name, self.player1.name)  # Alice should win by bidding 200
-    #     self.assertEqual(final_bid, 200)
-
-    @patch("builtins.input", side_effect=["50", "exit"])
-    def test_insufficient_balance_cannot_bid(self, mock_input):
-        """Ensure players cannot bid more than their balance."""
-        self.player1.balance = 40  # Alice has only 40, tries to bid 50
-        winner, final_bid = self.bank.bid_property([self.player1, self.player2], self.property)
-        self.assertEqual(winner, self.player2)  # Bob wins by default
+        self.assertEqual(winner, self.player2)
         self.assertEqual(final_bid, 0)
     
     @patch("builtins.input", side_effect=["exit"])
-    def test_player_exits_auction(self, mock_input):
-        """If a player exits, they are removed from the auction."""
-        self.player2.bot_bid = MagicMock(return_value=50)  # Bot bids 50
-        winner, final_bid = self.bank.bid_property([self.player1, self.player2], self.property)
-        self.assertEqual(winner, self.player2)  # Bob wins since Alice exits
+    def test_bid_property_single_exit(self, mock_input):
+        """Test a single player exiting immediately"""
+        active_bidders = [self.player1]
+        winner, final_bid = self.bank.bid_property(active_bidders, self.property)
+
+        self.assertEqual(winner, self.player1)
+        self.assertEqual(final_bid, 0)
 
     # sell_property_to_the_bank(self, plr, sold_property)
     def test_sell_unmortgaged_property_to_bank(self):

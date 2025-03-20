@@ -45,7 +45,7 @@ class TestPlayer(unittest.TestCase):
         self.player.position = 39
         mock_randint.side_effect = [2, 2]  # Rolls 2 and 2
         self.player.move()
-        self.assertEqual(self.player.position, 2)
+        self.assertEqual(self.player.position, 3)
         self.assertTrue(self.player.passed)
         self.assertEqual(self.player.balance, 1700)  # Collected £200
         self.assertEqual(self.mock_game.bank.balance, 9800)
