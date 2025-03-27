@@ -2,40 +2,43 @@ import pygame
 
 class PreGameScreen:
     """
-    This class manages the Pre-Game screen where players select game mode,
-    time limit (if applicable), and number of human/AI players before starting.
+    Displays the pre-game setup screen where players can:
+    - Choose game mode (Normal or Abridged)
+    - Set a time limit (for Abridged mode)
+    - Select the number of human and AI players
+    - Start the game when valid settings are chosen
     """
 
     def __init__(self, screen):
         """
-        Initialize the UI elements and layout for the pregame configuration screen.
+        Initialize all UI elements and settings for the pre-game screen.
 
-        Parameters:
-        screen (pygame.Surface): The Pygame surface where the screen is drawn.
+        Args:
+            screen: The Pygame display surface to draw the interface on.
         """
         self.screen = screen
         self.width, self.height = screen.get_size()
 
-        # Load and scale background image
+        # 🎨 Load and scale background image to fill the screen
         self.background = pygame.image.load("assets/background.png")
         self.background = pygame.transform.scale(self.background, (self.width, self.height))
 
-        # Fonts for UI elements
+        # 🖋️ Fonts for general and button text
         self.font = pygame.font.Font(None, 38)
         self.button_font = pygame.font.Font(None, 32)
 
-        # Default selections
-        self.selected_mode = "Normal"       # Game mode: "Normal" or "Abridged"
-        self.time_limit = ""                # Time input (only if Abridged selected)
-        self.num_human_players = 1          # Starting human players
-        self.num_ai_players = 0             # Starting AI players
-        self.max_players = 5                # Game limit
+        # Game state options
+        self.selected_mode = "Normal"
+        self.time_limit = ""  # in minutes
+        self.num_human_players = 1
+        self.num_ai_players = 0
+        self.max_players = 5  # Combined human + AI
 
-        # Sound for clicking buttons
+        # 🎵 Load button click sound
         pygame.mixer.init()
         self.click_sound = pygame.mixer.Sound("assets/click.wav")
 
-        # UI element rectangles (positions and sizes)
+        # Button placements
         self.start_button_rect = pygame.Rect(self.width // 2 - 75, self.height - 100, 150, 50)
         self.normal_button_rect = pygame.Rect(100, 150, 200, 50)
         self.abridged_button_rect = pygame.Rect(400, 150, 200, 50)
@@ -44,22 +47,28 @@ class PreGameScreen:
         self.minus_ai_button = pygame.Rect(340, 380, 40, 40)
         self.plus_ai_button = pygame.Rect(390, 380, 40, 40)
 
+        # Input box for time (only shown in Abridged mode)
         self.input_box = pygame.Rect(340, 220, 100, 40)
-        self.input_active = False  # Whether the time limit input box is selected
+        self.input_active = False
 
-        self.start_disabled = True  # Prevent starting until valid player count
+        self.start_disabled = True  # Start disabled until enough players are selected
 
     def draw(self):
         """
-        Draw the full pre-game screen with all buttons, labels, inputs, and overlays.
+        Render the full pre-game UI including:
+        - Mode buttons
+        - Player selection
+        - Time limit input
+        - Start button
         """
-        # Draw background and dark overlay for readability
         self.screen.blit(self.background, (0, 0))
+
+        # Overlay for better text readability
         overlay = pygame.Surface((self.width, self.height), pygame.SRCALPHA)
-        overlay.fill((0, 0, 0, 150))  # Semi-transparent black
+        overlay.fill((0, 0, 0, 150))  # Dark transparent layer
         self.screen.blit(overlay, (0, 0))
 
-        # Title
+        # Game title
         title_text = self.font.render("Welcome to Property Tycoon: Select Your Game Options", True, (255, 255, 255))
         self.screen.blit(title_text, (self.width // 2 - title_text.get_width() // 2, 50))
 
@@ -67,7 +76,7 @@ class PreGameScreen:
         self.draw_hover_button(self.normal_button_rect, "Normal", selected=self.selected_mode == "Normal")
         self.draw_hover_button(self.abridged_button_rect, "Abridged", selected=self.selected_mode == "Abridged")
 
-        # Time limit input (only if Abridged is selected)
+        # Show time input for abridged mode
         if self.selected_mode == "Abridged":
             time_label = self.font.render("Time Limit (mins):", True, (255, 255, 255))
             self.screen.blit(time_label, (100, 230))
@@ -75,42 +84,42 @@ class PreGameScreen:
             pygame.draw.rect(self.screen, (200, 200, 200), self.input_box, border_radius=5)
             pygame.draw.rect(self.screen, (255, 255, 255), self.input_box, 2, border_radius=5)
 
+            # Show typed numbers inside input box
             time_text = self.font.render(self.time_limit, True, (0, 0, 0))
             text_rect = time_text.get_rect(midleft=(self.input_box.x + 10, self.input_box.centery))
             self.screen.blit(time_text, text_rect)
 
-        # Player count display
+        # Player count controls
         human_text = self.font.render(f"Human Players: {self.num_human_players}", True, (255, 255, 255))
         self.screen.blit(human_text, (100, 300))
+
         ai_text = self.font.render(f"AI Players: {self.num_ai_players}", True, (255, 255, 255))
         self.screen.blit(ai_text, (100, 380))
 
-        # + and - buttons for adjusting player counts
+        # Draw + / - buttons for players
         self.draw_hover_button(self.minus_human_button, "−")
         self.draw_hover_button(self.plus_human_button, "+")
         self.draw_hover_button(self.minus_ai_button, "−")
         self.draw_hover_button(self.plus_ai_button, "+")
 
-        # Start button (only enabled if player count is valid)
+        # Draw Start button (enabled/disabled)
         self.draw_hover_button(self.start_button_rect, "Start", disabled=self.start_disabled)
 
         pygame.display.flip()
 
     def handle_event(self, event):
         """
-        Handles mouse clicks and keyboard input (for text fields).
-
-        Parameters:
-        event (pygame.event.Event): A single event from the Pygame event loop.
+        Respond to mouse clicks and keyboard input.
 
         Returns:
-        str or None: Returns "start" if the user clicks the start button, otherwise None.
+            "start" if the Start button is clicked and valid.
+            None otherwise.
         """
         if event.type == pygame.MOUSEBUTTONDOWN:
             x, y = event.pos
             self.click_sound.play()
 
-            # Game mode selection
+            # Switch modes
             if self.normal_button_rect.collidepoint(x, y):
                 self.selected_mode = "Normal"
                 self.input_active = False
@@ -118,30 +127,29 @@ class PreGameScreen:
                 self.selected_mode = "Abridged"
                 self.input_active = True
 
-            # Human player count
+            # Adjust human players
             if self.minus_human_button.collidepoint(x, y) and self.num_human_players > 1:
                 self.num_human_players -= 1
-            elif self.plus_human_button.collidepoint(x, y) and (self.num_human_players + self.num_ai_players < self.max_players):
+            elif self.plus_human_button.collidepoint(x, y) and self.num_human_players + self.num_ai_players < self.max_players:
                 self.num_human_players += 1
 
-            # AI player count
+            # Adjust AI players
             if self.minus_ai_button.collidepoint(x, y) and self.num_ai_players > 0:
                 self.num_ai_players -= 1
-            elif self.plus_ai_button.collidepoint(x, y) and (self.num_human_players + self.num_ai_players < self.max_players):
+            elif self.plus_ai_button.collidepoint(x, y) and self.num_human_players + self.num_ai_players < self.max_players:
                 self.num_ai_players += 1
 
-            # Enable or disable start button based on selection
             self.check_start_condition()
 
-            # Activate text input box if clicked
+            # Activate time input
             if self.input_box.collidepoint(x, y) and self.selected_mode == "Abridged":
                 self.input_active = True
 
-            # Start game
+            # Start game if conditions met
             if self.start_button_rect.collidepoint(x, y) and not self.start_disabled:
                 return "start"
 
-        # Text input for time limit (when Abridged mode is selected)
+        # Handle typing in time box
         elif event.type == pygame.KEYDOWN and self.input_active:
             if event.key == pygame.K_RETURN:
                 self.input_active = False
@@ -154,10 +162,8 @@ class PreGameScreen:
 
     def check_start_condition(self):
         """
-        Validates player count and enables/disables the Start button.
-        Game requires either:
-        - 2+ human players, OR
-        - 1+ human AND 1+ AI player
+        Validate that there are enough players to start the game.
+        Enables or disables the Start button accordingly.
         """
         self.start_disabled = not (
             self.num_human_players >= 2 or
@@ -166,18 +172,17 @@ class PreGameScreen:
 
     def draw_hover_button(self, button_rect, text, selected=False, disabled=False):
         """
-        Draws a button with color changes for hover, selected, or disabled states.
+        Draws a button with hover effects and highlight state.
 
-        Parameters:
-        button_rect (pygame.Rect): Position and size of the button.
-        text (str): Button label.
-        selected (bool): If True, shows the button as selected.
-        disabled (bool): If True, dims the button and disables click.
+        Args:
+            button_rect: pygame.Rect defining button size/position.
+            text: Label displayed inside the button.
+            selected: Whether this button is actively selected.
+            disabled: Whether this button should be dimmed and non-interactive.
         """
         mouse_x, mouse_y = pygame.mouse.get_pos()
         is_hovered = button_rect.collidepoint(mouse_x, mouse_y)
 
-        # Color logic for different states
         if disabled:
             color = (80, 80, 80)
         elif selected:
@@ -188,7 +193,6 @@ class PreGameScreen:
             color = (200, 0, 0)
 
         pygame.draw.rect(self.screen, color, button_rect, border_radius=10)
-
         text_surface = self.button_font.render(text, True, (255, 255, 255))
         text_rect = text_surface.get_rect(center=button_rect.center)
         self.screen.blit(text_surface, text_rect)

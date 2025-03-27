@@ -3,24 +3,36 @@
         {
             "name": "Alice",
             "token": "Boot",
-            "balance": 1700,
-            "position": 32,
-            "properties": []
+            "balance": 1254,
+            "position": 2,
+            "properties": [
+                "The Old Creek",
+                "Rey Lane",
+                "Shatner Close",
+                "Ibis Close",
+                "The Old Creek"
+            ]
         },
         {
             "name": "Bob",
             "token": "Ship",
-            "balance": 1685,
-            "position": 16,
-            "properties": []
+            "balance": 1216,
+            "position": 14,
+            "properties": [
+                "Falmer Station",
+                "Wookie Hole"
+            ]
         },
         {
             "name": "Charlie",
             "token": "Hatstand",
-            "balance": 1500,
-            "position": 36,
-            "properties": []
+            "balance": 1230,
+            "position": 21,
+            "properties": [
+                "Brighton Station",
+                "Bishop Drive"
+            ]
         }
     ],
-    "bank_balance": 49600
+    "bank_balance": 50780
 }
