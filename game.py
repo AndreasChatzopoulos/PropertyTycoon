@@ -164,7 +164,9 @@ class Game:
                 return
 
         print(f"{player.name} declined to buy {property_at_position.name}. Starting auction!")
-        self.bank.auction_property(property_at_position, self.players)
+        auction_players = self.players.copy()
+        auction_players = auction_players[self.current_player_index:] + auction_players[:self.current_player_index]
+        self.bank.auction_property(property_at_position, auction_players)
 
     def player_options(self, player):
         """Displays actions a player can take after their turn."""
