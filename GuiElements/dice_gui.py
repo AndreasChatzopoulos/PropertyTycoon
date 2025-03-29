@@ -9,7 +9,7 @@ class DiceGUI:
     Displays a clickable roll button, dice images, and a double-roll history panel.
     """
 
-    def __init__(self, screen, event_logger=None):
+    def __init__(self, screen):
         """
         Initialize the DiceGUI.
 
@@ -34,22 +34,20 @@ class DiceGUI:
         self.dice_rotation_angle = 0
         self.bounce_offset = 0
 
-        self.log_event = event_logger if event_logger else print
-
     def draw(self):
         """Draw the dice button, dice faces, and the double roll history."""
         mouse_x, mouse_y = pygame.mouse.get_pos()
         hovered = self.dice_button.collidepoint(mouse_x, mouse_y)
 
         # Draw roll button
-        button_color = (180, 0, 0) if hovered else (255, 0, 0)
-        pygame.draw.rect(self.screen, (0, 0, 0), self.dice_button, border_radius=10)
-        pygame.draw.rect(self.screen, button_color, self.dice_button.inflate(-4, -4), border_radius=10)
+        # button_color = (180, 0, 0) if hovered else (255, 0, 0)
+        # pygame.draw.rect(self.screen, (0, 0, 0), self.dice_button, border_radius=10)
+        # pygame.draw.rect(self.screen, button_color, self.dice_button.inflate(-4, -4), border_radius=10)
 
-        font = pygame.font.Font(None, 32)
-        text_surface = font.render("Roll Dice", True, (255, 255, 255))
-        text_rect = text_surface.get_rect(center=self.dice_button.center)
-        self.screen.blit(text_surface, text_rect)
+        # font = pygame.font.Font(None, 32)
+        # text_surface = font.render("Roll Dice", True, (255, 255, 255))
+        # text_rect = text_surface.get_rect(center=self.dice_button.center)
+        # self.screen.blit(text_surface, text_rect)
 
         # Draw dice
         die_1, die_2 = self.dice_result
@@ -109,14 +107,14 @@ class DiceGUI:
 
             if elapsed < self.animation_duration:
                 if now - self.last_animation_time > 0.1:
-                    self.dice_result = (random.randint(1, 6), random.randint(1, 6))
+                    # self.dice_result = (random.randint(1, 6), random.randint(1, 6))
                     self.last_animation_time = now
 
                 self.dice_rotation_angle = math.sin(elapsed * 10) * 10
                 self.bounce_offset = int(math.sin(elapsed * 15) * 5)
             else:
                 # Final dice result
-                self.dice_result = (random.randint(1, 6), random.randint(1, 6))
+                # self.dice_result = (random.randint(1, 6), random.randint(1, 6))
                 self.rolling = False
                 self.dice_rotation_angle = 0
                 self.bounce_offset = 0
@@ -126,15 +124,10 @@ class DiceGUI:
                 if die1 == die2:
                     self.double_streak += 1
                     self.double_history.append(self.dice_result)
-                    self.log_event(f"🎲 Rolled: {die1} + {die2} (Double! Streak: {self.double_streak})")
                 else:
-                    if self.double_streak > 0:
-                        self.log_event(f"🎲 Rolled: {die1} + {die2} (No double - streak reset)")
-                    else:
-                        self.log_event(f"🎲 Rolled: {die1} + {die2}")
                     self.double_streak = 0
                     self.double_history.clear()  # Reset history on non-double roll
 
     def get_dice_result(self):
         """Return the final dice result once rolling is done."""
-        return self.dice_result if not self.rolling else (0, 0)
+        return self.dice_result

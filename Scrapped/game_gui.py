@@ -1,13 +1,13 @@
 import pygame
 import sys
 import time
-from board_gui import BoardGUI
-from pregame_screen_gui import PreGameScreen
+from GuiElements.board_gui import BoardGUI
+from GuiElements.pregame_screen_gui import PreGameScreen
 from token_selection_gui import TokenSelectionScreen
-from left_sidebar_gui import LeftSidebar
-from board_elements import BoardElementsGUI
-from dice_gui import DiceGUI
-from right_sidebar_gui import RightSidebar
+from GuiElements.left_sidebar_gui import LeftSidebar
+from GameElements.board_elements import BoardElementsGUI
+from GuiElements.dice_gui import DiceGUI
+from GuiElements.right_sidebar_gui import RightSidebar
 
 class GameGUI:
     def __init__(self, width=1200, height=750):

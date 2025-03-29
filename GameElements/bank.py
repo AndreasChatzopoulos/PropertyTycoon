@@ -1,4 +1,4 @@
-from property import Property
+from GameElements.property import Property
 from collections import deque
 
 
@@ -216,7 +216,7 @@ class Bank:
             player.balance += amount
             print(f"💰 {player.name} received £{amount}.")
         else:
-            print(f"❌ {self.name} doesn’t have enough money to pay £{amount_due}! Selling assets...")
+            print(f"❌ {self.name} doesn’t have enough money to pay £{amount}! Selling assets...")
             self.avoid_bankruptcy(amount, player)
 
     def receive_payment(self, player, amount):

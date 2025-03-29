@@ -1,5 +1,5 @@
 import pygame
-from spaces_gui import SpacesGUI
+from GuiElements.spaces_gui import SpacesGUI
 
 class BoardGUI:
     """

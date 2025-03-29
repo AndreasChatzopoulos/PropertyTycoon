@@ -1,7 +1,7 @@
 import unittest
 from unittest.mock import MagicMock, patch
-from bank import Bank
-from property import Property
+from GameElements.bank import Bank
+from GameElements.property import Property
 
 class TestBank(unittest.TestCase):
     def setUp(self):

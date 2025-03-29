@@ -1,6 +1,7 @@
 import pygame
+from property_tycoon import PropertyTycoon
 
-class LeftSidebar:
+class LeftSidebar(PropertyTycoon):
     """
     Represents the left sidebar of the Monopoly game GUI.
 
@@ -13,7 +14,7 @@ class LeftSidebar:
     Includes support for mouse interaction, property selection, and event logging.
     """
 
-    def __init__(self, screen, event_logger=None):
+    def __init__(self, screen, game, event_logger=None):
         """
         Initialize the LeftSidebar layout and data.
 
@@ -67,6 +68,7 @@ class LeftSidebar:
         }
 
         self.log_event = event_logger if event_logger else print  # Logger fallback
+        self.game = game
 
     def draw(self):
         """Draw the entire left sidebar and its components."""

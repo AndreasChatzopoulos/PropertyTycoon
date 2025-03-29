@@ -1,8 +1,11 @@
-from player import Player
-from bank import Bank
-from cards import Cards
+from GameElements.player import Player
+from GameElements.bank import Bank
+from GameElements.cards import Cards
+import GuiElements
 import json
 import os
+
+import GuiElements.dice_gui
 
 
 class Game:
@@ -15,82 +18,18 @@ class Game:
         self.fines = 0
         self.cards = Cards()
 
-
-    def save_game(self, filename="savegame.json"):
-        """Saves the current game state to a JSON file."""
-        game_data = {
-            "players": [{
-                "name": p.name,
-                "token": p.token,
-                "balance": p.balance,
-                "position": p.position,
-                "properties": [prop.name for prop in p.owned_properties]
-            } for p in self.players],
-            "bank_balance": self.bank.balance
-        }
-
-        with open(filename, "w") as f:
-            json.dump(game_data, f, indent=4)
-        print("💾 Game successfully saved!")
-
-    def load_game(self, filename="savegame.json"):
-        """Loads game state from a JSON file."""
-        if not os.path.exists(filename):
-            print("❌ No saved game found!")
-            return
-
-        with open(filename, "r") as f:
-            game_data = json.load(f)
-
-        # Restore bank balance
-        self.bank.balance = game_data["bank_balance"]
-
-        # Restore players
-        for p_data, player in zip(game_data["players"], self.players):
-            player.name = p_data["name"]
-            player.token = p_data["token"]
-            player.balance = p_data["balance"]
-            player.position = p_data["position"]
-
-            # Assign properties back to players
-            player.owned_properties = []
-            for prop_name in p_data["properties"]:
-                for prop in self.bank.properties:
-                    if prop.name == prop_name:
-                        prop.owner = player
-                        player.owned_properties.append(prop)
-
-        print("✅ Game successfully loaded!")
-
-
-    @staticmethod
-    def load_players_from_file(filename="players.json"):
-        """Loads player names and tokens from a JSON file."""
-        filepath = os.path.join(os.path.dirname(__file__), filename)
-
-        if not os.path.exists(filepath):
-            print("❌ Player file not found! Starting with default players.")
-            return ["Alice", "Bob"], ["Boot", "Ship"], ["Human", "Human"]
-
-        with open(filepath, "r") as f:
-            data = json.load(f)
-            player_names = [p["name"] for p in data["players"]]
-            player_tokens = [p["token"] for p in data["players"]]
-            player_identities = [p["identity"] for p in data["players"]]
-            return player_names, player_tokens, player_identities
-
-    def play_turn(self):
+    def play_turn(self, die1, die2):
         """Handles a single player's turn """
         player = self.players[self.current_player_index]
         print(f"\n🎲 {player.name}'s turn!")
         print(f"💰 Balance: £{player.balance}")
-        player.move()
+        player.move(die1, die2, (die1 == die2))
 
         self.handle_position(player)
-        self.player_options(player)
+        #self.player_options(player)
         if player.position == 11 and player.in_jail:
             player.consecutive_doubles = 0
-        self.next_turn(player)
+        # self.next_turn(player)
         
     
     def handle_position(self, player):
@@ -125,16 +64,15 @@ class Game:
 
 
 
-    def next_turn(self, player):
+    def next_turn(self, player, die1, die2):
         """Moves to the next player's turn unless they rolled doubles."""
         if player.consecutive_doubles == 0:
             self.current_player_index = (self.current_player_index + 1) % len(self.players)
         else:
             self.current_player_index = (self.current_player_index + 0) % len(self.players)
 
-        # Auto-save game after every turn
-        self.save_game()
-        self.play_turn()
+        
+        self.play_turn(die1, die2)
 
     def handle_property(self, player):
         """Handles property interactions when a player lands on a space."""
@@ -144,29 +82,44 @@ class Game:
             if property_at_position.owner != player and property_at_position.owner is not None:
                 rent = property_at_position.calculate_rent()
                 player.pay_rent(property_at_position, rent)
-            elif not player.passed and property_at_position.owner is None:
-                print(f"{player.name} has not passed go and thus is ineligible to buy a property")
-            else:
-                self.prompt_property_purchase(player, property_at_position)
+            # elif not player.passed and property_at_position.owner is None:
+            #     print(f"{player.name} has not passed go and thus is ineligible to buy a property")
+            # else:
+            #     self.prompt_property_purchase(player)
 
-    def prompt_property_purchase(self, player, property_at_position):
-        """Prompt the player to buy a property or start an auction."""
-        print(f"{player.name} landed on {property_at_position.name}. It costs £{property_at_position.price}.")
+    def eligible_to_buy(self, player):
+        property_at_position = self.bank.properties.get(player.position, None)
+        if property_at_position is None:
+            return False
+        return player.balance >= property_at_position.price and player.passed and property_at_position.owner is None
 
-        if player.balance >= property_at_position.price and player.passed:
-            if player.identity == "Human":
-                choice = input("Do you want to buy it? (yes/no): ").strip().lower()
-            else:
-                choice = player.bot_buy_property(property_at_position)
-
-            if choice == "yes":
-                player.buy_property(property_at_position)
-                return
-
-        print(f"{player.name} declined to buy {property_at_position.name}. Starting auction!")
+    def start_auction(self, player):
         auction_players = self.players.copy()
         auction_players = auction_players[self.current_player_index:] + auction_players[:self.current_player_index]
-        self.bank.auction_property(property_at_position, auction_players)
+        self.bank.auction_property(self.bank.properties.get(player.position, None), auction_players)
+
+    def prompt_property_purchase(self, player):
+        """Prompt the player to buy a property or start an auction."""
+        property_at_position = self.bank.properties.get(player.position, None)
+        print(f"{player.name} landed on {property_at_position.name}. It costs £{property_at_position.price}.")
+
+        #if player.balance >= property_at_position.price and player.passed and property_at_position.owner is None:
+        if property_at_position.owner is not None:
+            print(f"{player.name} has landed on {property_at_position.name}, which is owned by {property_at_position.owner.name}.")
+            return (f"{player.name} has landed on {property_at_position.name}, which is owned by {property_at_position.owner.name}.")
+        elif not player.passed: 
+            print(f"{player.name} has not passed go and thus is ineligible to buy a property")
+            return (f"{player.name} has not passed go and thus is ineligible to buy a property")
+        elif player.balance <= property_at_position.price:
+            print (f"{player.name} does not have enough money to buy {property_at_position.name}.")
+            return (f"{player.name} does not have enough money to buy {property_at_position.name}.")
+        else:
+            if player.identity == "Human":
+                player.buy_property(property_at_position)
+                print(f"{player.name} has bought {property_at_position.name} for £{property_at_position.price}.")
+                return (f"{player.name} has bought {property_at_position.name} for £{property_at_position.price}.")
+            else:
+                player.bot_buy_property(property_at_position)
 
     def player_options(self, player):
         """Displays actions a player can take after their turn."""
@@ -174,9 +127,7 @@ class Game:
             print(f"\n🎲 {player.name}'s Turn Options:")
             print("1️⃣  Manage a Property")
             print("2️⃣  Propose a Trade")
-            print("3️⃣  Save Game 💾")
-            print("4️⃣  Load Game 📂")
-            print("5️⃣  End Turn")
+            print("3️⃣   End Turn")
 
             try:
                 if player.identity == "Human":
@@ -189,10 +140,6 @@ class Game:
                     other_player = self.select_other_player(player)
                     self.propose_trade(player, other_player)
                 elif choice == 3:
-                    self.save_game()
-                elif choice == 4:
-                    self.load_game()
-                elif choice == 5:
                     print(f"🎲 {player.name} has ended their turn with a balance of £{player.balance}.")
                     print(r"-------------------------------------------------")
                     self.next_turn(player)  # Exit loop to continue game

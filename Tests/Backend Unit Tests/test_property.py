@@ -1,6 +1,6 @@
 import unittest
 from unittest.mock import MagicMock
-from property import Property
+from GameElements.property import Property
 
 class TestProperty(unittest.TestCase):
     def setUp(self):

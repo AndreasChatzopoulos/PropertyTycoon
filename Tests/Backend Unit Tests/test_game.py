@@ -1,9 +1,9 @@
 import unittest
 from unittest.mock import MagicMock, patch
-from game import Game
-from player import Player
-from bank import Bank
-from cards import Cards
+from GameElements.game_logic import Game
+from GameElements.player import Player
+from GameElements.bank import Bank
+from GameElements.cards import Cards
 
 class TestGame(unittest.TestCase):
     def setUp(self):

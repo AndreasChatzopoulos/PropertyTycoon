@@ -1,6 +1,7 @@
 import pygame
+from property_tycoon import PropertyTycoon
 
-class RightSidebar:
+class RightSidebar(PropertyTycoon):
     """
     Handles the UI for the right-hand sidebar in the game.
     This includes:
@@ -8,8 +9,9 @@ class RightSidebar:
     - Functional buttons (Buy Property, Trade, End Turn, Save Game, Leave Game)
     - A modal-style Trade Menu window
     """
+    
 
-    def __init__(self, screen):
+    def __init__(self, screen, game, dice):
         """
         Initialize the sidebar layout, buttons, and event log.
 
@@ -40,6 +42,8 @@ class RightSidebar:
         self.show_trade_menu = False
         self.trade_menu_rect = pygame.Rect(self.width // 4, self.height // 4, self.width // 2, self.height // 2)
         self.close_trade_button = pygame.Rect(self.trade_menu_rect.x + self.trade_menu_rect.width - 60, self.trade_menu_rect.y + 10, 50, 30)
+        self.game = game
+        self.dice = dice
 
     def draw(self):
         """
@@ -159,15 +163,24 @@ class RightSidebar:
 
             if self.buy_property_button.collidepoint(x, y):
                 self.log_event("Buy Property Clicked")
+                message = self.game.prompt_property_purchase(self.game.players[self.game.current_player_index])
+                self.log_event(message)
             elif self.trade_button.collidepoint(x, y):
                 self.show_trade_menu = True
                 self.log_event("Trade Menu Opened")
             elif self.end_turn_button.collidepoint(x, y):
                 self.log_event("End Turn Clicked")
+
+                # check for auction
+                if self.game.eligible_to_buy(self.game.players[self.game.current_player_index]):
+                    print(f"{self.game.players[self.game.current_player_index].name} declined to buy the property. Starting auction!")
+                    self.game.start_auction(self.game.players[self.game.current_player_index])
+
+                super().roll_and_play_next_turn() 
             elif self.save_game_button.collidepoint(x, y):
                 self.log_event("Game Saved")
             elif self.leave_game_button.collidepoint(x, y):
-                self.log_event("Left Game")
+                self.log_event("Left Game")  
 
         elif event.type == pygame.MOUSEWHEEL:
             # Scroll the game events panel when hovered
@@ -192,4 +205,4 @@ class RightSidebar:
         Returns:
             Callable log_event function
         """
-        return self.log_event
+        return self.log_event 

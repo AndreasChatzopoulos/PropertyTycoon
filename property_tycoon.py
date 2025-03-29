@@ -1,17 +1,19 @@
 import pygame
 import sys
 import time
+import json
+import os
 
 # Import all GUI components for different parts of the game
-from board_gui import BoardGUI
-from pregame_screen_gui import PreGameScreen
-from token_selection_gui import TokenSelectionScreen
-from left_sidebar_gui import LeftSidebar
-from board_elements import BoardElementsGUI
-from dice_gui import DiceGUI
-from right_sidebar_gui import RightSidebar
+from GuiElements.board_gui import BoardGUI
+from GuiElements.pregame_screen_gui import PreGameScreen
+from GuiElements.token_selection_gui import TokenSelectionScreen
+from GameElements.board_elements import BoardElementsGUI
+from GuiElements.dice_gui import DiceGUI
 
-class GameGUI:
+from GameElements.game_logic import Game
+
+class PropertyTycoon:
     """
     Main controller class for the Monopoly game UI.
 
@@ -48,10 +50,7 @@ class GameGUI:
         self.pregame_screen = PreGameScreen(self.screen)
         self.token_selection_screen = None
         self.board = None
-        self.right_sidebar = RightSidebar(self.screen)
-        self.sidebar = LeftSidebar(self.screen, event_logger=self.right_sidebar.get_event_logger())
         self.elements = None
-        self.dice = DiceGUI(self.screen, event_logger=self.right_sidebar.get_event_logger())
 
         # Game data
         self.players = {}
@@ -63,6 +62,20 @@ class GameGUI:
         self.start_time = None
         self.time_limit_seconds = None
 
+        # Declare the game
+        self.game = None
+        self.dice = DiceGUI(self.screen)
+
+        from GuiElements.right_sidebar_gui import RightSidebar
+        self.right_sidebar = RightSidebar(self.screen, self.game, self.dice)
+        from GuiElements.left_sidebar_gui import LeftSidebar
+        self.left_sidebar = LeftSidebar(self.screen, self.game, event_logger=self.right_sidebar.get_event_logger())
+
+    def roll_and_play_next_turn(self):
+        self.dice.start_roll_animation()
+        die1, die2 = self.dice.get_dice_result()
+        self.game.next_turn(self.game.players[self.game.current_player_index], die1, die2)
+    
     def draw(self):
         """
         Draw the appropriate screen depending on the current game state.
@@ -79,7 +92,7 @@ class GameGUI:
 
             self.board.draw(self.screen)
             self.elements.draw()
-            self.sidebar.draw()
+            self.left_sidebar.draw()
             self.right_sidebar.draw()
 
             # Hide dice when trade menu is visible
@@ -132,7 +145,9 @@ class GameGUI:
                 if not self.right_sidebar.show_trade_menu:
                     self.dice.handle_event(event)
 
-                self.sidebar.handle_event(event)
+                self.left_sidebar.game = self.game
+                self.right_sidebar.game = self.game
+                self.left_sidebar.handle_event(event)
                 self.right_sidebar.handle_event(event)
 
     def start_token_selection(self):
@@ -150,7 +165,28 @@ class GameGUI:
         Start the main game after token selection is confirmed.
         Initializes the board and game elements.
         """
-        self.players = self.token_selection_screen.get_selected_tokens()
+        self.players = self.token_selection_screen.get_selected_tokens()  # dict: {player_number: token}
+        total_players = self.human_players + self.ai_players
+
+        player_data = []
+
+        for i in range(1, total_players + 1):
+            name = f"Player {i}"
+            token = self.players[i]
+            identity = "Human" if i <= self.human_players else "Basic Bot"
+            player_data.append({
+                "name": name,
+                "token": token,
+                "identity": identity
+            })
+
+        self.save_players_to_json(player_data)
+        player_names, player_tokens, player_identities = self.load_players_from_file("players.json")
+        self.game = Game(player_names, player_tokens, player_identities)
+        self.dice.start_roll_animation()
+        die1, die2 = self.dice.get_dice_result()
+        self.game.play_turn(die1, die2)
+
 
         # Load and scale player token images
         for player, token_name in self.players.items():
@@ -167,6 +203,28 @@ class GameGUI:
             self.start_time = time.time()
 
         self.state = "board"
+
+    @staticmethod
+    def load_players_from_file(filename="players.json"):
+        """Loads player names and tokens from a JSON file."""
+        filepath = os.path.join(os.path.dirname(__file__), filename)
+
+        if not os.path.exists(filepath):
+            print("❌ Player file not found! Starting with default players.")
+            return ["Alice", "Bob"], ["Boot", "Ship"], ["Human", "Human"]
+
+        with open(filepath, "r") as f:
+            data = json.load(f)
+            player_names = [p["name"] for p in data["players"]]
+            player_tokens = [p["token"] for p in data["players"]]
+            player_identities = [p["identity"] for p in data["players"]]
+            return player_names, player_tokens, player_identities
+    
+    def save_players_to_json(self, player_data, filename="players.json"):
+        with open(filename, "w") as f:
+            json.dump({"players": player_data}, f, indent=4)
+        print("✅ Player data saved to players.json")
+
 
     def draw_tokens_on_board(self):
         """

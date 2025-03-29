@@ -1,7 +1,7 @@
 import unittest
 from unittest.mock import Mock, patch
 import random
-from player import Player
+from GameElements.player import Player
 
 class TestPlayer(unittest.TestCase):
     def setUp(self):

@@ -1,7 +1,14 @@
 {
     "players": [
-        {"name": "Alice", "token": "Boot", "identity": "Human"},
-        {"name": "Bob", "token": "Ship", "identity": "Human"},
-        {"name": "Charlie", "token": "Hatstand", "identity": "Basic Bot"}
+        {
+            "name": "Player 1",
+            "token": "hatstand",
+            "identity": "Human"
+        },
+        {
+            "name": "Player 2",
+            "token": "smartphone",
+            "identity": "Human"
+        }
     ]
 }

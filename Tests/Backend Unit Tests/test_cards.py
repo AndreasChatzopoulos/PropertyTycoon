@@ -1,6 +1,6 @@
 import unittest
 from unittest.mock import MagicMock, patch
-from cards import Card, Cards, CardDeck
+from GameElements.cards import Card, Cards, CardDeck
 
 class TestCard(unittest.TestCase):
 

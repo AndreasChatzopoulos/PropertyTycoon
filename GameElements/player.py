@@ -24,8 +24,7 @@ class Player:
         double = (die1 == die2)
         return die1, die2, double
 
-    def move(self):  # Handle Jail
-        die1, die2, double = self.roll_dice()
+    def move(self, die1, die2, double):  # Handle Jail
         if double:
             self.consecutive_doubles += 1
             if self.consecutive_doubles >= 3:
