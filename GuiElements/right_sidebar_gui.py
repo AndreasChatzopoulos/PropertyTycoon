@@ -64,7 +64,8 @@ class RightSidebar(PropertyTycoon):
         visible_height = inner_rect.height - 30
         line_height = 20
         max_lines = visible_height // line_height
-        visible_lines = self.event_log[-(max_lines + self.scroll_offset):-self.scroll_offset if self.scroll_offset > 0 else None]
+        visible_lines = self.event_log[::-1][self.scroll_offset:self.scroll_offset + max_lines]
+
         log_y = inner_rect.y + 30
 
         for line in visible_lines:

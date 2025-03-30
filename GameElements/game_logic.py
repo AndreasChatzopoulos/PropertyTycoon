@@ -16,7 +16,7 @@ class Game:
         self.running = True
         self.bank = Bank()
         self.fines = 0
-        self.cards = Cards()
+        self.cards = Cards() 
 
     def play_turn(self, die1, die2):
         """Handles a single player's turn """
@@ -43,15 +43,21 @@ class Game:
             self.cards.draw_pot_luck_card(player, self)
 
         elif player.position in [8, 23, 37]:
-            print("Oppurtunity Knocks")
+            print("Opportunity Knocks")
             self.cards.draw_opportunity_knocks_card(player, self)
 
         elif player.position == 31:
             player.go_to_jail()
 
         elif player.position == 21:
-            player.balance += self.fines
-            self.fines = 0
+            if self.fines > 0:
+                player.balance += self.fines
+                self.log_event(f"🅿️ {player.name} landed on Free Parking and collected £{self.fines}")
+                self.fines = 0
+            else:
+                self.log_event(f"🅿️ {player.name} landed on Free Parking, but there's nothing to collect.")
+
+
 
         elif player.position == 1:
             print(f" {player.name} has landed at Go!")
@@ -93,33 +99,47 @@ class Game:
             return False
         return player.balance >= property_at_position.price and player.passed and property_at_position.owner is None
 
+    def prompt_property_purchase(self, player):
+        """Prompt the player to buy a property or start an auction."""
+        property_at_position = self.bank.properties.get(player.position, None)
+
+        # 🧱 If it's not a buyable property (like tax, free parking, etc.)
+        if property_at_position is None:
+            return f"{player.name} cannot buy anything at this tile."
+
+        print(f"{player.name} landed on {property_at_position.name}. It costs £{property_at_position.price}.")
+
+        # 🧍 Already owned
+        if property_at_position.owner is not None:
+            if property_at_position.owner == player:
+                print(f"{player.name} already owns {property_at_position.name}.")
+                return f"You already own {property_at_position.name}."
+            print(f"{player.name} has landed on {property_at_position.name}, which is owned by {property_at_position.owner.name}.")
+            return f"{property_at_position.name} is already owned by {property_at_position.owner.name}."
+
+        # 🚫 Hasn't passed GO
+        if not player.passed:
+            print(f"{player.name} has not passed GO and is ineligible to buy {property_at_position.name}.")
+            return f"{player.name} has not passed GO and is ineligible to buy {property_at_position.name}."
+
+        # 💸 Insufficient funds
+        if player.balance < property_at_position.price:
+            print(f"{player.name} does not have enough money to buy {property_at_position.name}.")
+            return f"{player.name} does not have enough money to buy {property_at_position.name}."
+
+        # ✅ Purchase
+        if player.identity == "Human":
+            player.buy_property(property_at_position)
+            print(f"{player.name} has bought {property_at_position.name} for £{property_at_position.price}.")
+            return f"{player.name} has bought {property_at_position.name} for £{property_at_position.price}."
+        else:
+            player.bot_buy_property(property_at_position)
+            return f"{player.name}'s bot has bought {property_at_position.name} for £{property_at_position.price}."
+
     def start_auction(self, player):
         auction_players = self.players.copy()
         auction_players = auction_players[self.current_player_index:] + auction_players[:self.current_player_index]
         self.bank.auction_property(self.bank.properties.get(player.position, None), auction_players)
-
-    def prompt_property_purchase(self, player):
-        """Prompt the player to buy a property or start an auction."""
-        property_at_position = self.bank.properties.get(player.position, None)
-        print(f"{player.name} landed on {property_at_position.name}. It costs £{property_at_position.price}.")
-
-        #if player.balance >= property_at_position.price and player.passed and property_at_position.owner is None:
-        if property_at_position.owner is not None:
-            print(f"{player.name} has landed on {property_at_position.name}, which is owned by {property_at_position.owner.name}.")
-            return (f"{player.name} has landed on {property_at_position.name}, which is owned by {property_at_position.owner.name}.")
-        elif not player.passed: 
-            print(f"{player.name} has not passed go and thus is ineligible to buy a property")
-            return (f"{player.name} has not passed go and thus is ineligible to buy a property")
-        elif player.balance <= property_at_position.price:
-            print (f"{player.name} does not have enough money to buy {property_at_position.name}.")
-            return (f"{player.name} does not have enough money to buy {property_at_position.name}.")
-        else:
-            if player.identity == "Human":
-                player.buy_property(property_at_position)
-                print(f"{player.name} has bought {property_at_position.name} for £{property_at_position.price}.")
-                return (f"{player.name} has bought {property_at_position.name} for £{property_at_position.price}.")
-            else:
-                player.bot_buy_property(property_at_position)
 
     def player_options(self, player):
         """Displays actions a player can take after their turn."""
@@ -247,14 +267,12 @@ class Game:
                 return
             other_player.balance -= request_money
             current_player.balance += request_money
-
-            # Transfer properties
         for prop in offer_properties:
             prop.transfer_property(other_player)
         for prop in request_properties:
             prop.transfer_property(current_player)
 
-        print("✅ Trade completed successfully!")  # mA m
+        print("✅ Trade completed successfully!") 
         return
 
     def select_other_player(self, current_player):
@@ -262,20 +280,17 @@ class Game:
         Allows the current player to select another player from the game.
         Returns the selected player or None if the selection is invalid.
         """
-        # Get a list of all players except the current player
         available_players = [p for p in self.players if p != current_player]
 
-        # Display available players
         print("\n📋 Select a player:")
         for i, player in enumerate(available_players, 1):
             print(f"{i}. {player.name} (Token: {player.token})")
 
-        # Get player's choice
         while True:
             try:
                 choice = int(input("Enter the number of the player you want to select: "))
                 if 1 <= choice <= len(available_players):
-                    return available_players[choice - 1]  # Return the chosen player
+                    return available_players[choice - 1]
                 else:
                     print("❌ Invalid choice. Try again.")
             except ValueError:
@@ -285,12 +300,19 @@ class Game:
         """
         Moves the player to a specified position, ensuring they collect £200 if they pass GO.
         """
-        if new_position < player.position:  # ✅ Player crosses GO
+        if new_position < player.position:  
             player.passed_go = True
             player.balance += 200
             self.bank.balance -= 200
             print(f"🛤️ {player.name} passed GO and collected £200!")
 
-        player.position = new_position  # ✅ Update position
+        player.position = new_position  
         print(f"🚀 {player.name} moves to {new_position}")
+
+    def log_event(self, message):
+        if self.ui and hasattr(self.ui, "right_sidebar"):
+            self.ui.right_sidebar.log_event(message)
+        print(message)  
+
+
 

@@ -48,8 +48,8 @@ class BoardGUI:
             ("Edison Water", "Utilities", 150), ("Crusher Creek", "Yellow", 280), ("Go to Jail", None, None),
             ("Sirat Mews", "Green", 300), ("Ghengis Crescent", "Green", 300),
             ("Pot Luck", None, None), ("Ibis Close", "Green", 320), ("Portslade Station", "Station", 200),
-            ("Opportunity Knocks", None, None), ("James Webb Way", "Deep blue", 350),
-            ("Super Tax", None, None), ("Turing Heights", "Deep blue", 400)
+            ("Opportunity Knocks", None, None), ("James Webb Way", "Dark Blue", 350),
+            ("Super Tax", None, None), ("Turing Heights", "Dark Blue", 400)
         ]
 
         spaces = []

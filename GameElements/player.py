@@ -28,7 +28,10 @@ class Player:
     def move(self, die1, die2, double):
         if double:
             self.consecutive_doubles += 1
+            self.game.log_event(f"{self.name} rolled a double! ({die1}, {die2})")
+
             if self.consecutive_doubles >= 3:
+                self.game.log_event(f"{self.name} rolled 3 consecutive doubles and is sent to jail!")
                 self.go_to_jail()
                 self.consecutive_doubles = 0
                 return
@@ -40,13 +43,15 @@ class Player:
             self.jail_turns += 1
             self.get_out_of_jail(False, self.jail_turns >= 3)
             if self.in_jail:
-                print(f"{self.name} stays in jail (Turn {self.jail_turns})")
+                self.game.log_event(f"{self.name} stays in jail (Turn {self.jail_turns})")
                 self.consecutive_doubles = 0
                 return
         else:
             self.consecutive_doubles = 0
 
         steps = die1 + die2
+        self.game.log_event(f"{self.name} moves {steps} steps.")
+
         for _ in range(steps):
             old_position = self.position
             self.position = self.position + 1 if self.position < 40 else 1
@@ -56,15 +61,36 @@ class Player:
                 self.passed = True
                 self.balance += 200
                 self.game.bank.balance -= 200
-                print(f"🛤️ {self.name} passed GO and collected £200!")
+                self.game.log_event(f"🛤️ {self.name} passed GO and collected £200!")
 
             # Animate movement step
             if hasattr(self.game, "ui") and self.game.ui:
-                self.game.ui.draw()               # Redraw board state with new position
+                self.game.ui.draw()
                 pygame.display.flip()
-                pygame.time.wait(150)            # Delay between steps (ms)
+                pygame.time.wait(150)
 
-        print(f"{self.name} moved to position {self.position}")
+        # Determine tile name
+        special_tiles = {
+            1: "GO",
+            3: "Pot Luck",
+            5: "Income Tax",
+            8: "Opportunity Knocks",
+            11: "Just Visiting Jail" if not self.in_jail else "Jail",
+            18: "Pot Luck",
+            21: "Free Parking",
+            23: "Opportunity Knocks",
+            31: "Go To Jail",
+            34: "Pot Luck",
+            37: "Opportunity Knocks",
+            39: "Luxury Tax"
+        }
+
+        property_obj = self.game.bank.properties.get(self.position)
+        tile_name = property_obj.name if property_obj else special_tiles.get(self.position, "Unknown Tile")
+
+        self.game.log_event(f"{self.name} landed on tile {tile_name}")
+
+
 
     def buy_property(self, property_at_position):
         # Deduct money from the player
@@ -77,12 +103,16 @@ class Player:
         property_at_position.owner = self
         self.owned_properties.append(property_at_position)
 
-        print(f"✅ {self.name} bought {property_at_position.name} for £{property_at_position.price}!")
+        message = f"✅ {self.name} bought {property_at_position.name} for £{property_at_position.price}!"
+        print(message)
+        self.game.log_event(message)
 
     def go_to_jail(self):  # Adjust for doubles
         self.in_jail = True
         self.position = 11
-        print(f"{self.name} has been sent to jail!")
+        message = f"{self.name} has been sent to jail!"
+        print(message)
+        self.game.log_event(message)
 
     def get_out_of_jail(self, double, turns):
         if double:
@@ -111,7 +141,9 @@ class Player:
 
     def pay_tax(self, amount):
         self.balance -= amount
-        print(f"{self.name} paid income tax of £200!")
+        message = f"{self.name} paid income tax of £200!"
+        print(message)
+        self.game.log_event(message)
 
     def pay_rent(self, property_at_position, roll):
         """Handles rent payment when landing on an owned property."""
@@ -121,10 +153,18 @@ class Player:
         if self.balance >= amount_due:
             self.balance -= amount_due
             creditor.balance += amount_due
-            print(f"{self.name} paid £{amount_due} in rent to {creditor.name}.")
+
+            message = f"{self.name} paid £{amount_due} rent to {creditor.name}."
+            print(message)
+            self.game.log_event(message)
+
         else:
-            print(f"❌ {self.name} doesn’t have enough money to pay £{amount_due}! Selling assets...")
+            message = f"❌ {self.name} doesn’t have enough money to pay £{amount_due} rent to {creditor.name}! Attempting to raise funds..."
+            print(message)
+            self.game.log_event(message)
+
             self.avoid_bankruptcy(amount_due, creditor)
+
 
     def select_property(self, action):  # Method so the user selects property to sell
         """
@@ -322,14 +362,28 @@ class Player:
 
     def move_player_to(self, new_position):
         """Moves the player to a new position, collecting £200 if they pass GO."""
+        tile_name = "Unknown tile"
+
+        if hasattr(self.game, "ui") and hasattr(self.game.ui, "board"):
+            try:
+                tile_name = self.game.ui.board.spaces[new_position - 1].name
+            except (IndexError, AttributeError):
+                pass
+
         if new_position < self.position:
-            print(f"🛤️ {self.name} passes GO and collects £200!")
             self.balance += 200
             self.passed = True
+            message = f"🛤️ {self.name} passes GO and collects £200!"
+            print(message)
+            self.game.log_event(message)
 
         self.position = new_position
+
         if self.position != 1:
-            print(f"🚀 {self.name} moves to position {self.position}.")
+            message = f"🚀 {self.name} moves to {tile_name}."
+            print(message)
+            self.game.log_event(message)
+
 
     def assess_property_repair(self, game, house_cost, hotel_cost):
         """Charges players for property repairs."""

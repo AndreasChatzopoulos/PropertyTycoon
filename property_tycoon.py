@@ -190,6 +190,7 @@ class PropertyTycoon:
         player_names, player_tokens, player_identities = self.load_players_from_file("players.json")
         self.game = Game(player_names, player_tokens, player_identities)
         self.game.ui = self
+        self.game.log_event = self.right_sidebar.get_event_logger()
 
         self.dice.start_roll_animation()
         self.waiting_for_dice = True  # 👈 Begin dice roll visual, wait in loop

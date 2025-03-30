@@ -2,17 +2,27 @@
     "players": [
         {
             "name": "Player 1",
-            "token": "boot",
+            "token": "iron",
             "identity": "Human"
         },
         {
             "name": "Player 2",
-            "token": "cat",
+            "token": "smartphone",
             "identity": "Human"
         },
         {
             "name": "Player 3",
             "token": "hatstand",
+            "identity": "Human"
+        },
+        {
+            "name": "Player 4",
+            "token": "cat",
+            "identity": "Human"
+        },
+        {
+            "name": "Player 5",
+            "token": "boot",
             "identity": "Human"
         }
     ]
