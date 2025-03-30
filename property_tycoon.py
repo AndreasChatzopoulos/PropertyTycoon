@@ -164,8 +164,6 @@ class PropertyTycoon:
                 if not self.right_sidebar.show_trade_menu:
                     self.dice.handle_event(event)
 
-                # self.left_sidebar.game = self.game
-                # self.right_sidebar.game = self.game
                 self.left_sidebar.handle_event(event)
                 self.right_sidebar.handle_event(event)
 
