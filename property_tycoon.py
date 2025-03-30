@@ -65,6 +65,12 @@ class PropertyTycoon:
         # Declare the game
         self.game = None
         self.dice = DiceGUI(self.screen)
+        
+        self.first_turn_pending = False
+        self.pending_roll = None
+        self.waiting_for_dice = False
+
+
 
         from GuiElements.right_sidebar_gui import RightSidebar
         self.right_sidebar = RightSidebar(self.screen, self.game, self.dice)
@@ -183,16 +189,22 @@ class PropertyTycoon:
         self.save_players_to_json(player_data)
         player_names, player_tokens, player_identities = self.load_players_from_file("players.json")
         self.game = Game(player_names, player_tokens, player_identities)
+        self.game.ui = self
+
         self.dice.start_roll_animation()
-        die1, die2 = self.dice.get_dice_result()
-        self.game.play_turn(die1, die2)
+        self.waiting_for_dice = True  # 👈 Begin dice roll visual, wait in loop
+
+
 
 
         # Load and scale player token images
-        for player, token_name in self.players.items():
+        for i, player in enumerate(self.game.players, start=1):
+            token_name = self.players[i]
             image_path = f"assets/{token_name}.png"
-            self.token_images[player] = pygame.image.load(image_path)
-            self.token_images[player] = pygame.transform.scale(self.token_images[player], (40, 40))
+            token_image = pygame.image.load(image_path).convert_alpha()
+            token_scaled = pygame.transform.scale(token_image, (40, 40))
+            player.token_image = token_scaled  
+
 
         self.board = BoardGUI(board_size=750, window_width=self.width, window_height=self.height)
         self.elements = BoardElementsGUI(self.screen)
@@ -228,33 +240,70 @@ class PropertyTycoon:
 
     def draw_tokens_on_board(self):
         """
-        Draw player tokens on the board (initially placed at "GO").
-        Automatically positions tokens in groups to avoid overlap.
+        Draw player tokens on the board based on their current positions.
+        - Solo tokens are offset to avoid blocking tile content
+        - Multiple tokens are laid out in a grid to avoid overlap
         """
-        base_position = self.board.spaces[0].rect.center
-        horizontal_offset = 25
-        vertical_offset = 35
-        total_players = self.human_players + self.ai_players
-        mid_point = total_players // 2
+        min_token_size = 24
+        max_token_ratio = 0.4 
+        tokens_per_tile = {}
 
-        for i, (player, token_name) in enumerate(self.players.items()):
-            token_image = self.token_images.get(player)
-            if token_image:
-                if i < mid_point:
-                    x_offset = base_position[0] - (mid_point * horizontal_offset // 2) + (i * horizontal_offset)
-                    y_offset = base_position[1] - vertical_offset // 2
-                else:
-                    x_offset = base_position[0] - (mid_point * horizontal_offset // 2) + (
-                        (i - mid_point) * horizontal_offset)
-                    y_offset = base_position[1] + vertical_offset // 2
+        # Group players by their current board position
+        for player in self.game.players:
+            position = player.position
+            tokens_per_tile.setdefault(position, []).append(player)
 
-                tile_rect = self.board.spaces[0].rect
-                token_w = tile_rect.width * 0.35
-                token_h = tile_rect.height * 0.35
-                token_image = pygame.transform.scale(token_image, (int(token_w), int(token_h)))
+        for position, players in tokens_per_tile.items():
+            tile = self.board.spaces[position - 1]
+            tile_rect = tile.rect
+            num_tokens = len(players)
 
-                self.screen.blit(token_image, (x_offset - token_image.get_width() // 2,
-                                               y_offset - token_image.get_height() // 2))
+            if num_tokens == 1:
+                player = players[0]
+                token_image = getattr(player, 'token_image', None)
+                if not token_image:
+                    continue
+
+                token_size = int(min(tile_rect.width, tile_rect.height) * max_token_ratio)
+                token_size = max(min_token_size, token_size)
+                token_scaled = pygame.transform.scale(token_image, (token_size, token_size))
+
+                offset_x = -tile_rect.width // 4
+                offset_y = tile_rect.height // 4
+                draw_x = tile_rect.centerx + offset_x - token_size // 2
+                draw_y = tile_rect.centery + offset_y - token_size // 2
+
+                self.screen.blit(token_scaled, (draw_x, draw_y))
+                continue
+
+            # For multiple players: layout tokens in a grid
+            max_cols = min(num_tokens, 3)
+            rows = (num_tokens + max_cols - 1) // max_cols
+
+            max_token_width = tile_rect.width / max_cols
+            max_token_height = tile_rect.height / rows
+            raw_token_size = int(min(max_token_width, max_token_height) * max_token_ratio)
+            token_size = max(min_token_size, raw_token_size)
+
+            total_width = max_cols * token_size
+            total_height = rows * token_size
+            start_x = tile_rect.centerx - total_width // 2
+            start_y = tile_rect.centery - total_height // 2
+
+            for idx, player in enumerate(players):
+                token_image = getattr(player, 'token_image', None)
+                if not token_image:
+                    continue
+
+                token_scaled = pygame.transform.scale(token_image, (token_size, token_size))
+                col = idx % max_cols
+                row = idx // max_cols
+                draw_x = start_x + col * token_size
+                draw_y = start_y + row * token_size
+
+                self.screen.blit(token_scaled, (draw_x, draw_y))
+
+
 
     def handle_board_events(self, event):
         """Handle hover highlighting for board spaces."""
@@ -286,7 +335,22 @@ class PropertyTycoon:
             self.handle_events()
             self.dice.update()
             self.draw()
-            self.clock.tick(30)  # 30 FPS
+
+            if self.state == "board":
+                # Wait for dice animation to complete
+                if self.waiting_for_dice and not self.dice.rolling:
+                    self.pending_roll = self.dice.get_dice_result()
+                    self.waiting_for_dice = False
+                    self.first_turn_pending = True
+
+                elif self.first_turn_pending:
+                    pygame.time.wait(1000)  # Optional delay after dice
+                    die1, die2 = self.pending_roll
+                    self.game.play_turn(die1, die2)
+                    self.first_turn_pending = False
+
+            self.clock.tick(30)
+
 
         pygame.quit()
         sys.exit()

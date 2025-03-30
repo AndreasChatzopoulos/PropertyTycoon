@@ -2,12 +2,17 @@
     "players": [
         {
             "name": "Player 1",
-            "token": "hatstand",
+            "token": "boot",
             "identity": "Human"
         },
         {
             "name": "Player 2",
-            "token": "smartphone",
+            "token": "cat",
+            "identity": "Human"
+        },
+        {
+            "name": "Player 3",
+            "token": "hatstand",
             "identity": "Human"
         }
     ]

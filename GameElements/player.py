@@ -1,4 +1,5 @@
 import random
+import pygame
 
 
 
@@ -24,37 +25,46 @@ class Player:
         double = (die1 == die2)
         return die1, die2, double
 
-    def move(self, die1, die2, double):  # Handle Jail
+    def move(self, die1, die2, double):
         if double:
             self.consecutive_doubles += 1
             if self.consecutive_doubles >= 3:
                 self.go_to_jail()
                 self.consecutive_doubles = 0
                 return
-            else:
-                if self.in_jail:
-                    self.get_out_of_jail(True, False)
-                    self.consecutive_doubles = 0
-                    return
+            elif self.in_jail:
+                self.get_out_of_jail(True, False)
+                self.consecutive_doubles = 0
+                return
         elif self.in_jail:
             self.jail_turns += 1
-            self.get_out_of_jail(False, self.jail_turns>=3)
+            self.get_out_of_jail(False, self.jail_turns >= 3)
             if self.in_jail:
                 print(f"{self.name} stays in jail (Turn {self.jail_turns})")
                 self.consecutive_doubles = 0
                 return
         else:
             self.consecutive_doubles = 0
-        
-        original_position = self.position
-        self.position = ((self.position - 1 + die1 + die2) % 40) + 1
-        print(f"{self.name} moves from position {original_position} to position {self.position}")
-        if self.position < original_position:
-            self.passed = True
-            self.balance += 200
-            self.game.bank.balance -= 200
-            print(f"🛤️ {self.name} passed GO and collected £200!")
-        return
+
+        steps = die1 + die2
+        for _ in range(steps):
+            old_position = self.position
+            self.position = self.position + 1 if self.position < 40 else 1
+
+            # Handle passing GO
+            if self.position == 1:
+                self.passed = True
+                self.balance += 200
+                self.game.bank.balance -= 200
+                print(f"🛤️ {self.name} passed GO and collected £200!")
+
+            # Animate movement step
+            if hasattr(self.game, "ui") and self.game.ui:
+                self.game.ui.draw()               # Redraw board state with new position
+                pygame.display.flip()
+                pygame.time.wait(150)            # Delay between steps (ms)
+
+        print(f"{self.name} moved to position {self.position}")
 
     def buy_property(self, property_at_position):
         # Deduct money from the player
