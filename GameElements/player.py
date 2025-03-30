@@ -9,7 +9,7 @@ class Player:
         self.name = name
         self.token = token
         self.identity = identity
-        self.game = game  # ✅ Fix: Store game reference instead of creating a new game
+        self.game = game  #  Fix: Store game reference instead of creating a new game
         self.balance = 1500
         self.owned_properties = []
         self.passed = False
@@ -28,11 +28,9 @@ class Player:
     def move(self, die1, die2, double):
         if self.in_jail:
             if self.identity == "Human":
-                # Let the JailPopup handle this turn for Human players
                 self.game.log_event(f"{self.name} is in jail. Awaiting decision...")
                 return
             else:
-                # Bot jail logic
                 if double:
                     self.get_out_of_jail(True, False)
                 else:
@@ -43,7 +41,6 @@ class Player:
                         self.consecutive_doubles = 0
                         return
 
-        # Handle doubles logic (outside of jail now)
         if double:
             self.consecutive_doubles += 1
             self.game.log_event(f"{self.name} rolled a double! ({die1}, {die2})")
@@ -56,7 +53,6 @@ class Player:
         else:
             self.consecutive_doubles = 0
 
-        # Move the player
         steps = die1 + die2
         self.game.log_event(f"{self.name} moves {steps} steps.")
 
@@ -75,7 +71,6 @@ class Player:
                 pygame.display.flip()
                 pygame.time.wait(150)
 
-        # Determine tile name
         special_tiles = {
             1: "GO",
             3: "Pot Luck",
@@ -99,13 +94,10 @@ class Player:
 
 
     def buy_property(self, property_at_position):
-        # Deduct money from the player
         self.balance -= property_at_position.price
 
-        # Add money to the bank
         self.game.bank.balance += property_at_position.price
 
-        # Transfer ownership
         property_at_position.owner = self
         self.owned_properties.append(property_at_position)
 
@@ -113,7 +105,7 @@ class Player:
         print(message)
         self.game.log_event(message)
 
-    def go_to_jail(self):  # Adjust for doubles
+    def go_to_jail(self):  
         self.in_jail = True
         self.position = 11
         message = f"{self.name} has been sent to jail!"

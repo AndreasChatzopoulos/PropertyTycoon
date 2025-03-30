@@ -30,7 +30,7 @@ class Game:
         #self.player_options(player)
         if player.position == 11 and player.in_jail:
             player.consecutive_doubles = 0
-        # self.next_turn(player)
+
         
     
     def handle_position(self, player):
@@ -92,7 +92,7 @@ class Game:
             elif property_at_position.owner is None:
                 if not player.passed:
                     if player.identity != "Human":
-                        self.log_event(f"⚠️ {player.name} has not passed GO and is not eligible to buy {property_at_position.name}.")
+                        self.log_event(f" {player.name} has not passed GO and is not eligible to buy {property_at_position.name}.")
                     # For humans, no message here — handled via Buy button
                 else:
                     if player.identity != "Human":
@@ -100,7 +100,7 @@ class Game:
                         purchase_result = self.prompt_property_purchase(player)
 
                         if purchase_result == "bought":
-                            self.log_event(f"✅ {player.name} purchased {property_at_position.name} for £{property_at_position.price}")
+                            self.log_event(f" {player.name} purchased {property_at_position.name} for £{property_at_position.price}")
                         elif purchase_result == "declined":
                             eligible_bidders = self.get_eligible_auction_players()
                             if len(eligible_bidders) > 1:
@@ -108,9 +108,8 @@ class Game:
                                 self.start_auction_popup = True
                                 self.auction_eligible_players = eligible_bidders
                             else:
-                                self.log_event("❌ Not enough eligible bidders to start an auction. Property remains unowned.")
+                                self.log_event(" Not enough eligible bidders to start an auction. Property remains unowned.")
                     else:
-                        # Human player — wait for Buy button to be clicked
                         self.log_event(f"🛍️ {player.name} can choose to buy {property_at_position.name} using the Buy button.")
 
 

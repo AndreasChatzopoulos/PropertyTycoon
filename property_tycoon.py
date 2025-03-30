@@ -64,7 +64,6 @@ class PropertyTycoon:
         self.start_time = None
         self.time_limit_seconds = None
 
-        # Declare the game
         self.game = None
         self.dice = DiceGUI(self.screen)
         
@@ -99,7 +98,7 @@ class PropertyTycoon:
             self.token_selection_screen.draw()
 
         elif self.state == "board":
-            self.screen.fill((200, 200, 200))  # Background color
+            self.screen.fill((200, 200, 200))
 
             self.board.draw(self.screen)
             self.elements.draw()
@@ -189,7 +188,7 @@ class PropertyTycoon:
         Start the main game after token selection is confirmed.
         Initializes the board and game elements.
         """
-        self.players = self.token_selection_screen.get_selected_tokens()  # dict: {player_number: token}
+        self.players = self.token_selection_screen.get_selected_tokens()
         total_players = self.human_players + self.ai_players
         self.auction_popup = None
 
@@ -217,7 +216,6 @@ class PropertyTycoon:
 
 
 
-        # Load and scale player token images
         for i, player in enumerate(self.game.players, start=1):
             token_name = self.players[i]
             image_path = f"assets/{token_name}.png"
@@ -229,7 +227,6 @@ class PropertyTycoon:
         self.board = BoardGUI(board_size=750, window_width=self.width, window_height=self.height)
         self.elements = BoardElementsGUI(self.screen)
 
-        # If in abridged mode, start countdown
         if self.pregame_screen.selected_mode == "Abridged" and self.pregame_screen.time_limit.isdigit():
             self.time_limit_seconds = int(self.pregame_screen.time_limit) * 60
             self.start_time = time.time()
@@ -268,7 +265,6 @@ class PropertyTycoon:
         max_token_ratio = 0.4 
         tokens_per_tile = {}
 
-        # Group players by their current board position
         for player in self.game.players:
             position = player.position
             tokens_per_tile.setdefault(position, []).append(player)
@@ -368,7 +364,6 @@ class PropertyTycoon:
                     self.game.play_turn(die1, die2)
                     self.first_turn_pending = False
 
-                # Current player
                 player = self.game.players[self.game.current_player_index]
 
                 # Show JailPopup if this player is in jail and is a human
@@ -385,7 +380,6 @@ class PropertyTycoon:
                 elif hasattr(self.game, 'start_auction_popup'):
                     prop = self.game.bank.properties.get(player.position)
 
-                    # ✅ Recalculate eligible bidders live to avoid stale data
                     eligible_bidders = [p for p in self.game.players if p.passed]
 
                     if (
@@ -395,7 +389,6 @@ class PropertyTycoon:
                     ):
                         self.auction_popup = AuctionPopup(self.screen, eligible_bidders, prop, self.game)
 
-                    # 🔄 Clean up auction trigger flags
                     del self.game.start_auction_popup
                     if hasattr(self.game, 'auction_eligible_players'):
                         del self.game.auction_eligible_players

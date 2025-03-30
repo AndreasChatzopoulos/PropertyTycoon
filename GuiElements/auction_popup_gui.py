@@ -31,7 +31,6 @@ class AuctionPopup:
         pygame.draw.rect(self.screen, (20, 20, 20), (400, 200, 400, 320))
         pygame.draw.rect(self.screen, (255, 255, 255), (400, 200, 400, 320), 3)
 
-        # Title and Info
         title = self.title_font.render(f"Auction: {self.property.name}", True, (255, 255, 255))
         player_name = self.font.render(f"Current Bidder: {self.current_player().name}", True, (255, 255, 255))
         highest = self.font.render(f"Highest Bid: £{self.highest_bid}", True, (255, 255, 255))
@@ -40,12 +39,10 @@ class AuctionPopup:
         self.screen.blit(player_name, (420, 250))
         self.screen.blit(highest, (420, 280))
 
-        # Input box
         pygame.draw.rect(self.screen, (255, 255, 255), self.input_box, 2)
         input_surface = self.font.render(self.input_text, True, (255, 255, 255))
         self.screen.blit(input_surface, (self.input_box.x + 10, self.input_box.y + 8))
 
-        # Buttons
         self.draw_button(self.place_bid_button, "Place Bid", "place")
         self.draw_button(self.exit_button, "Exit Auction", "exit")
 
@@ -100,13 +97,11 @@ class AuctionPopup:
             bid = int(self.input_text)
             player = self.current_player()
 
-            # Check if player is eligible to bid (must have passed GO)
             if not player.passed:
                 self.game.log_event(f"🚫 {player.name} cannot bid — they haven't passed GO yet.")
                 self.input_text = ""
                 return
 
-            # Check bid validity
             if bid > self.highest_bid and bid <= player.balance:
                 self.highest_bid = bid
                 self.highest_bidder = player
@@ -144,7 +139,6 @@ class AuctionPopup:
         self.end_auction()
 
 
-        # Otherwise, go to the next player still in the auction
         while True:
             self.active_player_index = (self.active_player_index + 1) % len(self.players)
             next_player = self.players[self.active_player_index]
@@ -161,10 +155,9 @@ class AuctionPopup:
             winner.owned_properties.append(self.property)
             self.game.log_event(f"🏦 {winner.name} won {self.property.name} for £{self.highest_bid}")
         else:
-            self.property.owner = None  # Ensure it stays unsold
+            self.property.owner = None
             self.game.log_event(f"❌ No one bid on {self.property.name}. It remains unowned.")
 
-        # Reset auction state
         self.visible = False
         self.input_text = ""
         self.highest_bid = 0
