@@ -287,7 +287,6 @@ class PropertyTycoon:
                 self.screen.blit(token_scaled, (draw_x, draw_y))
                 continue
 
-            # For multiple players: layout tokens in a grid
             max_cols = min(num_tokens, 3)
             rows = (num_tokens + max_cols - 1) // max_cols
 

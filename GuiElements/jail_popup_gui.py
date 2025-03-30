@@ -11,7 +11,6 @@ class JailPopup:
         self.font = pygame.font.SysFont(None, 28)
         self.hovered_button = None
 
-        # Button dimensions
         self.button_width = 250
         self.button_height = 40
         self.buttons = {
@@ -41,11 +40,10 @@ class JailPopup:
         for label, key in options:
             btn_rect = self.buttons[key]
             
-            # Highlight if hovered
             if self.hovered_button == key:
-                color = (150, 150, 150)  # lighter gray on hover
+                color = (150, 150, 150)  
             else:
-                color = (100, 100, 100)  # default button color
+                color = (100, 100, 100)  
 
             pygame.draw.rect(self.screen, color, btn_rect)
             pygame.draw.rect(self.screen, (255, 255, 255), btn_rect, 2)
@@ -72,7 +70,7 @@ class JailPopup:
             for key, rect in self.buttons.items():
                 if rect.collidepoint(event.pos):
                     self.handle_choice(key)
-                    self.visible = False  # Close the popup after selection
+                    self.visible = False  
                     return
 
 
@@ -91,7 +89,7 @@ class JailPopup:
                 if self.player.jail_turns >= 2:
                     self.player.in_jail = False
                     self.player.jail_turns = 0
-                    self.player.position = 11  # Just Visiting
+                    self.player.position = 11 
                     self.game.log_event(f"{self.player.name} has served their time and is now Just Visiting.")
                 self.visible = False
 
@@ -101,26 +99,25 @@ class JailPopup:
                 self.game.fines += 50
                 self.player.jail_turns = 0
                 self.player.in_jail = False
-                self.player.position = 11  # Just Visiting
+                self.player.position = 11  
                 self.game.log_event(f"💸 {self.player.name} paid £50 to get out of jail.")
                 self.visible = False
             else:
                 self.game.log_event(f"❌ {self.player.name} doesn't have enough money to pay.")
-                # Let them pick again
 
         elif choice == "card":
             if self.player.get_out_of_jail_cards > 0:
                 self.player.get_out_of_jail_cards -= 1
                 self.player.jail_turns = 0
                 self.player.in_jail = False
-                self.player.position = 11  # Just Visiting
+                self.player.position = 11 
                 if hasattr(self.game.cards, "return_jail_card_to_bottom"):
                     self.game.cards.return_jail_card_to_bottom()
                 self.game.log_event(f"🎟️ {self.player.name} used a Get Out of Jail Free card.")
                 self.visible = False
             else:
                 self.game.log_event(f"❌ {self.player.name} has no Get Out of Jail Free cards.")
-                # ❌ Don't close popup — let them try another option
+                #  Don't close popup — let them try another option
 
         elif choice == "wait":
             self.player.jail_turns += 1
@@ -128,6 +125,6 @@ class JailPopup:
             if self.player.jail_turns >= 2:
                 self.player.jail_turns = 0
                 self.player.in_jail = False
-                self.player.position = 11  # Just Visiting
+                self.player.position = 11
                 self.game.log_event(f"{self.player.name} has served their sentence and is now Just Visiting.")
             self.visible = False

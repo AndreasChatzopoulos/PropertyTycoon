@@ -103,13 +103,13 @@ class Game:
         """Prompt the player to buy a property or start an auction."""
         property_at_position = self.bank.properties.get(player.position, None)
 
-        # 🧱 If it's not a buyable property (like tax, free parking, etc.)
+        # If it's not a buyable property (like tax, free parking, etc.)
         if property_at_position is None:
             return f"{player.name} cannot buy anything at this tile."
 
         print(f"{player.name} landed on {property_at_position.name}. It costs £{property_at_position.price}.")
 
-        # 🧍 Already owned
+        # Already owned
         if property_at_position.owner is not None:
             if property_at_position.owner == player:
                 print(f"{player.name} already owns {property_at_position.name}.")
@@ -117,17 +117,17 @@ class Game:
             print(f"{player.name} has landed on {property_at_position.name}, which is owned by {property_at_position.owner.name}.")
             return f"{property_at_position.name} is already owned by {property_at_position.owner.name}."
 
-        # 🚫 Hasn't passed GO
+        # Hasn't passed GO
         if not player.passed:
             print(f"{player.name} has not passed GO and is ineligible to buy {property_at_position.name}.")
             return f"{player.name} has not passed GO and is ineligible to buy {property_at_position.name}."
 
-        # 💸 Insufficient funds
+        # Insufficient funds
         if player.balance < property_at_position.price:
             print(f"{player.name} does not have enough money to buy {property_at_position.name}.")
             return f"{player.name} does not have enough money to buy {property_at_position.name}."
 
-        # ✅ Purchase
+        # Purchase
         if player.identity == "Human":
             player.buy_property(property_at_position)
             print(f"{player.name} has bought {property_at_position.name} for £{property_at_position.price}.")
