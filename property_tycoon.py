@@ -102,6 +102,9 @@ class PropertyTycoon:
 
             self.board.draw(self.screen)
             self.elements.draw()
+
+            self.left_sidebar.game = self.game
+            self.right_sidebar.game = self.game
             self.left_sidebar.draw()
             self.right_sidebar.draw()
 
@@ -161,8 +164,8 @@ class PropertyTycoon:
                 if not self.right_sidebar.show_trade_menu:
                     self.dice.handle_event(event)
 
-                self.left_sidebar.game = self.game
-                self.right_sidebar.game = self.game
+                # self.left_sidebar.game = self.game
+                # self.right_sidebar.game = self.game
                 self.left_sidebar.handle_event(event)
                 self.right_sidebar.handle_event(event)
 

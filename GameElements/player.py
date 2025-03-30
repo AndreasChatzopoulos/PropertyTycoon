@@ -369,7 +369,7 @@ class Player:
                 elif options[choice] == "Sell houses from the property":
                     self.game.bank.sell_houses_to_the_bank(self, selected_property)
                 elif options[choice] == "Build houses on the property":
-                    number_of_houses = input("Enter the numbers of houses you want to build: ")
+                    number_of_houses = 1
                     self.game.bank.build(number_of_houses, selected_property, self)
 
 

@@ -139,22 +139,24 @@ class Bank:
         if selected_property.houses == 0:
             print(
                 f" No houses available to sell on {selected_property.name} ")
-            return
+            return (f" No houses available to sell on {selected_property.name} ")
 
-        while True:
-            try:
-                num = int(input(f"How many houses do you want to sell from {selected_property.name}? "))
-                if 0 < num <= selected_property.houses:
-                    total_value = selected_property.house_cost * num
-                    plr.balance += total_value
-                    self.balance += total_value
-                    selected_property.houses -= num
-                    print(f" Sold {num} house(s) from {selected_property.name} for £{total_value}.")
-                    break
-                else:
-                    print(f" Invalid number. {selected_property.name} has {selected_property.houses} house(s).")
-            except ValueError:
-                print(" Please enter a valid number.")
+        # while True:
+            # try:
+                # num = int(input(f"How many houses do you want to sell from {selected_property.name}? "))
+        num = 1
+        if 0 < num <= selected_property.houses:
+            total_value = selected_property.house_cost * num
+            plr.balance += total_value
+            self.balance += total_value
+            selected_property.houses -= num
+            print(f" Sold {num} house(s) from {selected_property.name} for £{total_value}.")
+            return (f" Sold {num} house(s) from {selected_property.name} for £{total_value}.")
+        else:
+            print(f" Invalid number. {selected_property.name} has {selected_property.houses} house(s).")
+            return (f" Invalid number. {selected_property.name} has {selected_property.houses} house(s).")
+            # except ValueError:
+            #     print(" Please enter a valid number.")
 
     def mortgage_property(self, plr, selected_property):
         """Allows the player to mortgage a property to raise funds"""
@@ -167,8 +169,8 @@ class Bank:
 
         selected_property.mortgaged = True
         mortgage_value = selected_property.price // 2
-        plr.balance -= mortgage_value
-        self.balance += mortgage_value
+        plr.balance += mortgage_value
+        self.balance -= mortgage_value
         print(f"{plr.name} mortgaged {selected_property.name} .")
 
     def unmortgage_property(self, plr, selected_property):
@@ -183,8 +185,8 @@ class Bank:
             return
 
         selected_property.mortgaged = False
-        plr.balance += mortgage_value
-        self.balance -= mortgage_value
+        plr.balance -= mortgage_value
+        self.balance += mortgage_value
         print(f"{plr.name} unmortgaged {selected_property.name} .")
 
 
@@ -194,20 +196,21 @@ class Bank:
         if not selected_property.check_completion():
             print(
                 f"{selected_property.owner} is attempting to build on {selected_property.name} a property of group {selected_property.group} which has not completed.")
-            return
+            return (f"Attempting to build on {selected_property.name} a property of group {selected_property.group} which has not completed.")
         elif selected_property.owner.balance < total_cost:
             print(
                 f"{selected_property.owner} doesn't have enough money to build {number_of_houses} on {selected_property.name}.")
-            return
+            return (f"{selected_property.owner} doesn't have enough money to build {number_of_houses} on {selected_property.name}.")
         elif selected_property.houses + number_of_houses > 5:  # Checks if the number exceeds the maximum number houses
             print(
                 f"{selected_property.owner} is attempting to build more than the maximum number of houses on {selected_property.name}  which is 5 for any given property.")
-            return
+            return ("{selected_property.owner} is attempting to build more than the maximum number of houses on {selected_property.name}  which is 5 for any given property.")
 
         selected_property.houses += number_of_houses
         plr.balance -= total_cost
         self.balance += total_cost
         print(f"{selected_property.owner.name} built {number_of_houses} houses on {selected_property.name}")
+        return (f"{selected_property.owner.name} built {number_of_houses} houses on {selected_property.name}")
 
     def pay_player(self, player, amount):
         """Pays a player the specified amount."""

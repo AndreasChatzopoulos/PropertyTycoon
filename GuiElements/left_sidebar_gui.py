@@ -34,20 +34,10 @@ class LeftSidebar(PropertyTycoon):
         self.player_info_section = pygame.Rect(10, self.bank_section.bottom + 10, self.sidebar_width - 20, 100)
         self.manage_property_button = pygame.Rect(10, self.player_info_section.bottom + 10, self.sidebar_width - 20, 40)
 
-        # Example bank/player data
+        self.game = game
         self.bank_balance = 50000
-        self.selected_player = 1
-        self.players = {
-            1: ("Hatstand", 1500),
-            2: ("Boot", 1400)
-        }
 
         # Property management state
-        self.owned_properties = [  # Example list of owned properties
-            "Old Kent Road", "Whitechapel Road", "King's Cross Station", "Euston Road", "Pentonville Road",
-            "Pall Mall", "Whitehall", "Northumberland Avenue", "Bow Street", "Marlborough Street",
-            "Vine Street", "Strand"
-        ]
         self.selected_property_name = None
         self.property_buttons = []
         self.scroll_offset = 0
@@ -63,12 +53,11 @@ class LeftSidebar(PropertyTycoon):
         self.popup_buttons = {
             "build_house": pygame.Rect(0, 0, self.sidebar_width - 20, 30),
             "build_hotel": pygame.Rect(0, 0, self.sidebar_width - 20, 30),
-            "mortgage": pygame.Rect(0, 0, self.sidebar_width - 20, 30),
+            "(un)mortgage": pygame.Rect(0, 0, self.sidebar_width - 20, 30),
             "sell_house": pygame.Rect(0, 0, self.sidebar_width - 20, 30),
         }
 
         self.log_event = event_logger if event_logger else print  # Logger fallback
-        self.game = game
 
     def draw(self):
         """Draw the entire left sidebar and its components."""
@@ -85,8 +74,8 @@ class LeftSidebar(PropertyTycoon):
         # Player section
         pygame.draw.rect(self.screen, (0, 0, 128), self.player_info_section)
         pygame.draw.rect(self.screen, (0, 0, 0), self.player_info_section, 2)
-        token, balance = self.players[self.selected_player]
-        self.screen.blit(font.render(f"Player {self.selected_player}", True, (255, 255, 255)), (self.player_info_section.x + 10, self.player_info_section.y + 10))
+        token, balance = self.game.players[self.game.current_player_index].token, self.game.players[self.game.current_player_index].balance
+        self.screen.blit(font.render(f"Player {self.game.current_player_index + 1}", True, (255, 255, 255)), (self.player_info_section.x + 10, self.player_info_section.y + 10))
         self.screen.blit(font.render(f"Token: {token}", True, (255, 255, 255)), (self.player_info_section.x + 10, self.player_info_section.y + 40))
         self.screen.blit(font.render(f"\u00a3{balance}", True, (255, 255, 255)), (self.player_info_section.x + 10, self.player_info_section.y + 65))
 
@@ -97,6 +86,13 @@ class LeftSidebar(PropertyTycoon):
 
     def draw_manage_properties_popup(self):
         """Render the scrollable list of properties and action buttons."""
+
+        properties = [prop_object.name if not prop_object.mortgaged else "M - "+prop_object.name for prop_object in self.game.players[self.game.current_player_index].owned_properties]
+        properties = [
+            "H" * prop_object.houses + ("M" if prop_object.mortgaged else "") + (" - " if prop_object.houses > 0 or prop_object.mortgaged else "") + prop_object.name
+            for prop_object in self.game.players[self.game.current_player_index].owned_properties
+        ]
+
         pygame.draw.rect(self.screen, (200, 200, 200), self.popup_rect)
         pygame.draw.rect(self.screen, (0, 0, 0), self.popup_rect, 2)
 
@@ -107,11 +103,11 @@ class LeftSidebar(PropertyTycoon):
         visible_count = 8
         item_height = 26
         start_y = self.popup_rect.y + 10
-        max_offset = max(0, len(self.owned_properties) - visible_count)
+        max_offset = max(0, len(properties) - visible_count)
         scroll_area_height = visible_count * item_height
 
         # Render visible property buttons
-        for i, prop in enumerate(self.owned_properties):
+        for i, prop in enumerate(properties):
             display_index = i - self.scroll_offset
             if 0 <= display_index < visible_count:
                 y = start_y + display_index * item_height
@@ -129,10 +125,10 @@ class LeftSidebar(PropertyTycoon):
                 self.property_buttons.append((prop_rect, prop))
 
         # Draw scrollbar if needed
-        if len(self.owned_properties) > visible_count:
+        if len(properties) > visible_count:
             scrollbar_x = self.popup_rect.right - 15
             scrollbar_y = start_y
-            bar_height = max(20, int(scroll_area_height * (visible_count / len(self.owned_properties))))
+            bar_height = max(20, int(scroll_area_height * (visible_count / len(properties))))
             scroll_ratio = self.scroll_offset / max_offset if max_offset > 0 else 0
             bar_y = scrollbar_y + int((scroll_area_height - bar_height) * scroll_ratio)
 
@@ -186,6 +182,25 @@ class LeftSidebar(PropertyTycoon):
                     if rect.collidepoint(x, y):
                         if self.selected_property_name:
                             self.log_event(f"{key.replace('_', ' ').title()} clicked for {self.selected_property_name}")
+                            properties = self.game.bank.properties
+                            properties = properties.items()
+                            properties = [p[1] for p in properties]
+                            selected_property = next((p for p in properties if p.name in self.selected_property_name), None)
+                            if key == "(un)mortgage":
+                                if selected_property.mortgaged:
+                                    self.game.bank.unmortgage_property(self.game.players[self.game.current_player_index], selected_property)
+                                else:
+                                    self.game.bank.mortgage_property(self.game.players[self.game.current_player_index], selected_property)
+                            elif key == "build_house":
+                                number_of_houses = 1
+                                message = self.game.bank.build(number_of_houses, selected_property, self.game.players[self.game.current_player_index])
+                                self.log_event(message)
+                            elif key == "build_hotel":
+                                pass
+                            elif key == "sell_house":
+                                message = self.game.bank.sell_houses_to_the_bank(self.game.players[self.game.current_player_index], selected_property)
+                                self.log_event(message)
+                                pass
                         else:
                             self.log_event(f"{key.replace('_', ' ').title()} clicked (no property selected)")
 
@@ -193,7 +208,7 @@ class LeftSidebar(PropertyTycoon):
 
         elif event.type == pygame.MOUSEWHEEL and self.active_popup == "manage_properties":
             self.scroll_offset -= event.y
-            self.scroll_offset = max(0, min(self.scroll_offset, max(0, len(self.owned_properties) - 8)))
+            self.scroll_offset = max(0, min(self.scroll_offset, max(0, len(self.game.players[self.game.current_player_index].owned_properties) - 8)))
             self.just_scrolled = True
 
     def toggle_popup(self, popup_type):
