@@ -11,6 +11,7 @@ from GuiElements.token_selection_gui import TokenSelectionScreen
 from GameElements.board_elements import BoardElementsGUI
 from GuiElements.dice_gui import DiceGUI
 from GuiElements.jail_popup_gui import JailPopup
+from GuiElements.auction_popup_gui import AuctionPopup
 
 from GameElements.game_logic import Game
 
@@ -79,6 +80,7 @@ class PropertyTycoon:
         self.left_sidebar = LeftSidebar(self.screen, self.game, event_logger=self.right_sidebar.get_event_logger())
 
         self.jail_popup = None
+        self.auction_popup = None
 
     def roll_and_play_next_turn(self):
         self.dice.start_roll_animation()
@@ -130,6 +132,8 @@ class PropertyTycoon:
             if self.jail_popup:
                 self.jail_popup.draw()
 
+            if self.auction_popup:
+                self.auction_popup.draw()   
 
             pygame.display.flip()
 
@@ -165,6 +169,10 @@ class PropertyTycoon:
 
                 if self.jail_popup:
                     self.jail_popup.handle_event(event)
+                
+                if self.auction_popup:
+                    self.auction_popup.handle_event(event) 
+                    return
 
     def start_token_selection(self):
         """
@@ -183,6 +191,7 @@ class PropertyTycoon:
         """
         self.players = self.token_selection_screen.get_selected_tokens()  # dict: {player_number: token}
         total_players = self.human_players + self.ai_players
+        self.auction_popup = None
 
         player_data = []
 
@@ -354,25 +363,47 @@ class PropertyTycoon:
                     self.first_turn_pending = True
 
                 elif self.first_turn_pending:
-                    pygame.time.wait(1000)  
+                    pygame.time.wait(1000)
                     die1, die2 = self.pending_roll
                     self.game.play_turn(die1, die2)
                     self.first_turn_pending = False
 
-                # Check if JailPopup should be shown
-                if self.state == "board":
-                    player = self.game.players[self.game.current_player_index]
+                # Current player
+                player = self.game.players[self.game.current_player_index]
 
-                    # Show Jail Popup if this player is in jail and is a human
-                    if player.in_jail and player.identity == "Human":
-                        if not self.jail_popup or self.jail_popup.player != player:
-                            self.jail_popup = JailPopup(self.screen, player, self.game)
-                    else:
-                        self.jail_popup = None 
+                # Show JailPopup if this player is in jail and is a human
+                if player.in_jail and player.identity == "Human":
+                    if not self.jail_popup or self.jail_popup.player != player:
+                        self.jail_popup = JailPopup(self.screen, player, self.game)
+                else:
+                    self.jail_popup = None
 
+                # Handle Auction Popup
+                if self.auction_popup:
+                    if not self.auction_popup.visible:
+                        self.auction_popup = None
+                elif hasattr(self.game, 'start_auction_popup'):
+                    prop = self.game.bank.properties.get(player.position)
+
+                    # ✅ Recalculate eligible bidders live to avoid stale data
+                    eligible_bidders = [p for p in self.game.players if p.passed]
+
+                    if (
+                        prop and
+                        prop.owner is None and
+                        len(eligible_bidders) > 1
+                    ):
+                        self.auction_popup = AuctionPopup(self.screen, eligible_bidders, prop, self.game)
+
+                    # 🔄 Clean up auction trigger flags
+                    del self.game.start_auction_popup
+                    if hasattr(self.game, 'auction_eligible_players'):
+                        del self.game.auction_eligible_players
 
             self.clock.tick(30)
 
         pygame.quit()
         sys.exit()
+
+
 
