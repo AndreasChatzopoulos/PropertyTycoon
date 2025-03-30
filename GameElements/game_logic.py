@@ -141,32 +141,32 @@ class Game:
         auction_players = auction_players[self.current_player_index:] + auction_players[:self.current_player_index]
         self.bank.auction_property(self.bank.properties.get(player.position, None), auction_players)
 
-    def player_options(self, player):
-        """Displays actions a player can take after their turn."""
-        while True:
-            print(f"\n🎲 {player.name}'s Turn Options:")
-            print("1️⃣  Manage a Property")
-            print("2️⃣  Propose a Trade")
-            print("3️⃣   End Turn")
+    # def player_options(self, player):
+    #     """Displays actions a player can take after their turn."""
+    #     while True:
+    #         print(f"\n🎲 {player.name}'s Turn Options:")
+    #         print("1️⃣  Manage a Property")
+    #         print("2️⃣  Propose a Trade")
+    #         print("3️⃣   End Turn")
 
-            try:
-                if player.identity == "Human":
-                    choice = int(input("Enter the number of your choice: "))
-                else:
-                    choice = player.bot_options()
-                if choice == 1:
-                    player.manage_property()
-                elif choice == 2:
-                    other_player = self.select_other_player(player)
-                    self.propose_trade(player, other_player)
-                elif choice == 3:
-                    print(f"🎲 {player.name} has ended their turn with a balance of £{player.balance}.")
-                    print(r"-------------------------------------------------")
-                    self.next_turn(player)  # Exit loop to continue game
-                else:
-                    print("❌ Invalid choice. Try again.")
-            except ValueError:
-                print("❌ Please enter a valid number.")
+    #         try:
+    #             if player.identity == "Human":
+    #                 choice = int(input("Enter the number of your choice: "))
+    #             else:
+    #                 choice = player.bot_options()
+    #             if choice == 1:
+    #                 player.manage_property()
+    #             elif choice == 2:
+    #                 other_player = self.select_other_player(player)
+    #                 self.propose_trade(player, other_player)
+    #             elif choice == 3:
+    #                 print(f"🎲 {player.name} has ended their turn with a balance of £{player.balance}.")
+    #                 print(r"-------------------------------------------------")
+    #                 self.next_turn(player)  # Exit loop to continue game
+    #             else:
+    #                 print("❌ Invalid choice. Try again.")
+    #         except ValueError:
+    #             print("❌ Please enter a valid number.")
 
     def propose_trade(self, current_player, other_player):  # MAYBE MOVE TO GAME CLASS
 

@@ -2,12 +2,12 @@
     "players": [
         {
             "name": "Player 1",
-            "token": "iron",
+            "token": "smartphone",
             "identity": "Human"
         },
         {
             "name": "Player 2",
-            "token": "smartphone",
+            "token": "iron",
             "identity": "Human"
         },
         {

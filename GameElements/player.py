@@ -26,6 +26,24 @@ class Player:
         return die1, die2, double
 
     def move(self, die1, die2, double):
+        if self.in_jail:
+            if self.identity == "Human":
+                # Let the JailPopup handle this turn for Human players
+                self.game.log_event(f"{self.name} is in jail. Awaiting decision...")
+                return
+            else:
+                # Bot jail logic
+                if double:
+                    self.get_out_of_jail(True, False)
+                else:
+                    self.jail_turns += 1
+                    self.get_out_of_jail(False, self.jail_turns >= 3)
+                    if self.in_jail:
+                        self.game.log_event(f"{self.name} stays in jail (Turn {self.jail_turns})")
+                        self.consecutive_doubles = 0
+                        return
+
+        # Handle doubles logic (outside of jail now)
         if double:
             self.consecutive_doubles += 1
             self.game.log_event(f"{self.name} rolled a double! ({die1}, {die2})")
@@ -35,20 +53,10 @@ class Player:
                 self.go_to_jail()
                 self.consecutive_doubles = 0
                 return
-            elif self.in_jail:
-                self.get_out_of_jail(True, False)
-                self.consecutive_doubles = 0
-                return
-        elif self.in_jail:
-            self.jail_turns += 1
-            self.get_out_of_jail(False, self.jail_turns >= 3)
-            if self.in_jail:
-                self.game.log_event(f"{self.name} stays in jail (Turn {self.jail_turns})")
-                self.consecutive_doubles = 0
-                return
         else:
             self.consecutive_doubles = 0
 
+        # Move the player
         steps = die1 + die2
         self.game.log_event(f"{self.name} moves {steps} steps.")
 
@@ -56,14 +64,12 @@ class Player:
             old_position = self.position
             self.position = self.position + 1 if self.position < 40 else 1
 
-            # Handle passing GO
             if self.position == 1:
                 self.passed = True
                 self.balance += 200
                 self.game.bank.balance -= 200
                 self.game.log_event(f"🛤️ {self.name} passed GO and collected £200!")
 
-            # Animate movement step
             if hasattr(self.game, "ui") and self.game.ui:
                 self.game.ui.draw()
                 pygame.display.flip()
@@ -114,41 +120,55 @@ class Player:
         print(message)
         self.game.log_event(message)
 
-    def get_out_of_jail(self, double, turns):
+    def get_out_of_jail(self, double=False, turns=False):
         if double:
-            print(f"{self.name} Rolled a Double!")
+            print(f"{self.name} rolled a double to get out of jail!")
             self.jail_turns = 0
             self.in_jail = False
-        elif self.get_out_of_jail_cards > 0:
-            print(f"{self.name} uses a Get Out of Jail Free card!")
+            self.game.log_event(f"{self.name} rolled a double and got out of jail!")
+            return
+
+        if self.get_out_of_jail_cards > 0:
             self.get_out_of_jail_cards -= 1
             self.jail_turns = 0
             self.in_jail = False
-        elif self.balance >= 50:
-            if self.identity == "Human":
-                choice = input(f"{self.name} can pay £50 to get out of jail. Pay? (yes/no): ")
-            else:
-                choice = self.bot_get_out_of_jail()
-            if choice.lower() == "yes":
+            print(f"{self.name} used a Get Out of Jail Free card!")
+            self.game.log_event(f"{self.name} used a Get Out of Jail Free card to leave jail.")
+            return
+
+        # Only allow bots to auto-decide here — human decisions are made via GUI popup
+        if self.identity != "Human":
+            if self.balance >= 50:
                 self.balance -= 50
                 self.jail_turns = 0
                 self.in_jail = False
                 print(f"{self.name} paid £50 to get out of jail!")
-        elif turns:
-            print(f"{self.name} Served 3 turns!")
-            self.jail_turns = 0
-            self.in_jail = False
+                self.game.log_event(f"{self.name} paid £50 to get out of jail.")
+            elif turns:
+                print(f"{self.name} served 3 turns and is now free.")
+                self.jail_turns = 0
+                self.in_jail = False
+                self.game.log_event(f"{self.name} served 3 turns and is out of jail.")
+
 
     def pay_tax(self, amount):
         self.balance -= amount
-        message = f"{self.name} paid income tax of £200!"
+        message = f"{self.name} paid tax of £{amount}!"
         print(message)
         self.game.log_event(message)
 
     def pay_rent(self, property_at_position, roll):
         """Handles rent payment when landing on an owned property."""
-        amount_due = property_at_position.calculate_rent(roll)
         creditor = property_at_position.owner
+
+        # If the owner is in jail, they can't collect rent
+        if creditor.in_jail:
+            message = f"{creditor.name} is in jail and cannot collect rent from {self.name}."
+            print(message)
+            self.game.log_event(message)
+            return
+
+        amount_due = property_at_position.calculate_rent(roll)
 
         if self.balance >= amount_due:
             self.balance -= amount_due
@@ -164,6 +184,7 @@ class Player:
             self.game.log_event(message)
 
             self.avoid_bankruptcy(amount_due, creditor)
+
 
 
     def select_property(self, action):  # Method so the user selects property to sell
@@ -358,7 +379,7 @@ class Player:
                 elif options[choice] == "Build houses on the property":
                     number_of_houses = input("Enter the numbers of houses you want to build: ")
                     self.game.bank.build(number_of_houses, selected_property, self)
-                self.game.player_options(self)
+
 
     def move_player_to(self, new_position):
         """Moves the player to a new position, collecting £200 if they pass GO."""

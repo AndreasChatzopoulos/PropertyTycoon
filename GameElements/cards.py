@@ -19,6 +19,8 @@ class Card:
             print(f"🎲 {player.name} moved to position {player.position}.")
             game.handle_position(player)  # Handle the new position
 
+    
+
 
 class CardDeck:
     """Represents a deck of shuffled cards using FIFO behavior."""
@@ -92,3 +94,15 @@ class Cards:
     def draw_opportunity_knocks_card(self, player, game):
         """Draws an Opportunity Knocks card for the player."""
         self.opportunity_knocks_deck.draw_card(player, game)
+
+    def return_jail_card_to_bottom(self, deck="pot_luck"):
+        """Returns a 'Get Out of Jail Free' card to the bottom of the specified deck."""
+        card = Card("Get out of jail free", lambda p, g: setattr(p, 'get_out_of_jail_cards', p.get_out_of_jail_cards + 1))
+
+        if deck == "pot_luck":
+            self.pot_luck_deck.cards.append(card)
+        elif deck == "opportunity_knocks":
+            self.opportunity_knocks_deck.cards.append(card)
+
+        print(f"🔁 'Get Out of Jail Free' card returned to {deck.replace('_', ' ').title()} deck.")
+
