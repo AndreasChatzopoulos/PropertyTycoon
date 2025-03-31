@@ -76,7 +76,8 @@ class LeftSidebar(PropertyTycoon):
         pygame.draw.rect(self.screen, (0, 0, 128), self.player_info_section)
         pygame.draw.rect(self.screen, (0, 0, 0), self.player_info_section, 2)
         token, balance = self.game.players[self.game.current_player_index].token, self.game.players[self.game.current_player_index].balance
-        self.screen.blit(font.render(f"Player {self.game.current_player_index + 1}", True, (255, 255, 255)), (self.player_info_section.x + 10, self.player_info_section.y + 10))
+        player_name = self.game.players[self.game.current_player_index].name
+        self.screen.blit(font.render(player_name, True, (255, 255, 255)), (self.player_info_section.x + 10, self.player_info_section.y + 10))
         self.screen.blit(font.render(f"Token: {token}", True, (255, 255, 255)), (self.player_info_section.x + 10, self.player_info_section.y + 40))
         self.screen.blit(font.render(f"\u00a3{balance}", True, (255, 255, 255)), (self.player_info_section.x + 10, self.player_info_section.y + 65))
 

@@ -50,6 +50,12 @@ class TokenSelectionScreen:
         self.background = pygame.image.load("assets/background.png")
         self.background = pygame.transform.scale(self.background, (self.width, self.height))
 
+        self.player_names = {}  # Track player number → name
+        self.name_input_active = False
+        self.name_input_text = ""
+        self.name_input_rect = pygame.Rect(self.width // 2 - 100, 250, 200, 40)
+
+
     def load_token_images(self):
         """
         Load token images from the assets folder.
@@ -69,21 +75,21 @@ class TokenSelectionScreen:
 
     def draw(self):
         """
-        Render the token selection interface, including available tokens,
-        current player, and confirm/start button.
+        Render the token selection interface, including:
+        - Available tokens
+        - Name input field
+        - Confirm/start button
+        - List of selected players
         """
         self.screen.blit(self.background, (0, 0))
 
-        # Semi-transparent overlay for better contrast
         overlay = pygame.Surface((self.width, self.height), pygame.SRCALPHA)
         overlay.fill((0, 0, 0, 150))
         self.screen.blit(overlay, (0, 0))
 
-        # Title
-        title = self.font.render(f"Player {self.current_player}, select your token:", True, (255, 255, 255))
+        title = self.font.render(f"Player {self.current_player}, select your token and enter your name:", True, (255, 255, 255))
         self.screen.blit(title, (self.width // 2 - title.get_width() // 2, 50))
 
-        # Token buttons
         x_start, y_start = 100, 150
         x_offset = 120
         mouse_x, mouse_y = pygame.mouse.get_pos()
@@ -92,28 +98,39 @@ class TokenSelectionScreen:
             x = x_start + index * x_offset
             token_rect = pygame.Rect(x, y_start, 80, 80)
 
-            # Highlight if hovering and not already selected
             if token_rect.collidepoint(mouse_x, mouse_y) and token not in self.selected_tokens.values():
                 pygame.draw.rect(self.screen, (255, 255, 0), token_rect, 4)
 
             self.screen.blit(self.token_images[token], (x, y_start))
             pygame.draw.rect(self.screen, (255, 255, 255), token_rect, 2)
 
-            # Show if selected
             if self.selected_tokens.get(self.current_player) == token:
                 pygame.draw.rect(self.screen, (255, 0, 0), token_rect, 3)
 
-        # Display selected tokens
-        y_selected = 300
-        label = self.font.render("Selected Tokens:", True, (255, 255, 255))
-        self.screen.blit(label, (100, y_selected))
+        input_label = self.font.render("Enter name:", True, (255, 255, 255))
+        self.screen.blit(input_label, (100, 270))
+
+        name_text = self.player_names.get(self.current_player, "")
+        box_border_color = (255, 255, 255) if self.name_input_active else (200, 200, 200)
+        box_fill_color = (240, 240, 240)  
+        text_color = (0, 0, 0) 
+
+        pygame.draw.rect(self.screen, box_fill_color, self.name_input_rect, border_radius=8)
+        pygame.draw.rect(self.screen, box_border_color, self.name_input_rect, 2, border_radius=8)
+
+        name_surface = self.font.render(name_text, True, text_color)
+        self.screen.blit(name_surface, (self.name_input_rect.x + 8, self.name_input_rect.y + 8))
+
+
+        y_selected = 350
+        self.screen.blit(self.font.render("Selected Players:", True, (255, 255, 255)), (100, y_selected))
 
         for player, token in self.selected_tokens.items():
+            name = self.player_names.get(player, "Unknown")
             confirmed = "✔" if player in self.confirmed_players else ""
-            text = self.font.render(f"Player {player}: {token} {confirmed}", True, (255, 255, 255))
-            self.screen.blit(text, (100, y_selected + player * 30))
+            info = f"Player {player}: {name} ({token}) {confirmed}"
+            self.screen.blit(self.font.render(info, True, (255, 255, 255)), (100, y_selected + player * 30))
 
-        # Confirm or Start button
         if self.current_player not in self.confirmed_players and self.selected_tokens.get(self.current_player):
             self.highlight_button(self.confirm_button_rect, (200, 0, 0), "Confirm")
         elif len(self.confirmed_players) == self.total_players:
@@ -121,12 +138,10 @@ class TokenSelectionScreen:
 
         pygame.display.flip()
 
+
     def handle_event(self, event):
         """
-        Handle mouse clicks on tokens and buttons.
-
-        Args:
-            event (pygame.Event): Event to handle.
+        Handle mouse clicks and keyboard input for token selection and name entry.
 
         Returns:
             str or None: "confirmed" if all players selected, else None.
@@ -135,47 +150,79 @@ class TokenSelectionScreen:
             x, y = event.pos
             self.click_sound.play()
 
-            # Check for token selection
+            if self.name_input_rect.collidepoint(x, y):
+                self.name_input_active = True
+            else:
+                self.name_input_active = False
+
             for i, token in enumerate(self.allowed_tokens):
                 token_rect = pygame.Rect(100 + i * 120, 150, 80, 80)
                 if token_rect.collidepoint(x, y):
-                    self.select_token(token)
+                    if token not in self.selected_tokens.values():
+                        self.select_token(token)
                     return
-
-            # Confirm or start game
+                
             if self.confirm_button_rect.collidepoint(x, y):
-                if self.current_player not in self.confirmed_players:
+                if self.current_player not in self.confirmed_players and self.selected_tokens.get(self.current_player):
                     self.confirm_selection()
                     return "confirmed"
 
+        elif event.type == pygame.KEYDOWN:
+            if self.name_input_active:
+                if self.current_player not in self.player_names:
+                    self.player_names[self.current_player] = ""
+
+                if event.key == pygame.K_RETURN:
+                    self.name_input_active = False
+                elif event.key == pygame.K_BACKSPACE:
+                    self.player_names[self.current_player] = self.player_names[self.current_player][:-1]
+                else:
+                    if len(self.player_names[self.current_player]) < 12: 
+                        self.player_names[self.current_player] += event.unicode
+
         return None
 
-    def select_token(self, token):
-        """
-        Assign the selected token to the current player.
 
-        Args:
-            token (str): The token name selected.
-        """
+
+    def select_token(self, token):
         if token in self.allowed_tokens and token not in self.selected_tokens.values():
             self.selected_tokens[self.current_player] = token
+            self.selected_token = token
+            self.name_input_active = True
+            if self.current_player not in self.player_names:
+                self.player_names[self.current_player] = ""  
+
 
     def confirm_selection(self):
         """
-        Confirm the selected token for current player,
-        then either move to next human or assign AI tokens.
+        Confirm the selected token and name for the current player.
+        Moves to the next player or assigns AI tokens once all human players are done.
         """
         if self.current_player in self.confirmed_players:
             return
 
-        if self.selected_tokens.get(self.current_player):
-            self.confirmed_players.add(self.current_player)
+        name_entered = self.player_names.get(self.current_player, "").strip()
+        selected_token = self.selected_tokens.get(self.current_player)
 
-            # Move to next player or assign AI tokens
-            if self.current_player < self.human_players:
-                self.current_player += 1
-            else:
-                self.assign_ai_tokens()
+        if not name_entered:
+            print(" Player must enter a name before confirming.")
+            return
+
+        if not selected_token:
+            print(" Player must select a token before confirming.")
+            return
+
+        self.confirmed_players.add(self.current_player)
+
+        self.name_input_active = False
+        self.name_input_text = ""
+
+        if self.current_player < self.human_players:
+            self.current_player += 1
+            self.selected_token = None
+        else:
+            self.assign_ai_tokens()
+
 
     def assign_ai_tokens(self):
         """

@@ -200,14 +200,17 @@ class PropertyTycoon:
         player_data = []
 
         for i in range(1, total_players + 1):
-            name = f"Player {i}"
+            # Use the custom name if provided; fallback to "Player {i}"
+            name = self.token_selection_screen.player_names.get(i, f"Player {i}")
             token = self.players[i]
             identity = "Human" if i <= self.human_players else "Basic Bot"
+            
             player_data.append({
                 "name": name,
                 "token": token,
                 "identity": identity
             })
+
 
         self.save_players_to_json(player_data)
         player_names, player_tokens, player_identities = self.load_players_from_file("players.json")
@@ -358,6 +361,7 @@ class PropertyTycoon:
 
             if self.state == "board":
                 player = self.game.players[self.game.current_player_index]
+
 
                 if getattr(player, "wants_to_roll_in_jail", False) and not self.dice.rolling:
                     self.dice.start_roll_animation()
