@@ -174,9 +174,12 @@ class RightSidebar(PropertyTycoon):
 
                 # check for auction
                 if self.game.eligible_to_buy(self.game.players[self.game.current_player_index]):
-                    print(f"{self.game.players[self.game.current_player_index].name} declined to buy the property. Starting auction!")
-                    self.game.start_auction(self.game.players[self.game.current_player_index])
-
+                    eligible_bidders = self.game.get_eligible_auction_players()
+                    if len(eligible_bidders) > 1:
+                        print(f"{self.game.players[self.game.current_player_index].name} declined to buy the property. Starting auction!")
+                        self.game.start_auction(self.game.players[self.game.current_player_index])
+                    else:
+                        self.log_event(" Not enough eligible bidders to start an auction. Property remains unowned.")
                 super().roll_and_play_next_turn() 
             elif self.save_game_button.collidepoint(x, y):
                 self.log_event("Game Saved")
