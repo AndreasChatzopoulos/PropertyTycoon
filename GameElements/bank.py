@@ -118,21 +118,29 @@ class Bank:
 
 
     def sell_property_to_the_bank(self, plr, sold_property):
-        if sold_property in plr.owned_properties and sold_property.houses == 0:
-            if sold_property.mortgaged:
-                self.balance -= sold_property.price // 2
-                plr.balance += sold_property.price // 2
-                sold_property.mortgaged = False
-            else:
-                self.balance -= sold_property.price
-                plr.balance += sold_property.price
-                
-            plr.owned_properties.remove(sold_property)
-            sold_property.owner = None
-            print(f"{plr.name} sold {sold_property.name} to the bank for £{sold_property.price}.")
-        
+        if sold_property not in plr.owned_properties:
+            return f"{sold_property.name} is not owned by {plr.name}."
+
+        if sold_property.houses > 0:
+            return f"{sold_property.name} still has {sold_property.houses} house(s). Sell them before selling the property."
+
+        if sold_property.mortgaged:
+            value = sold_property.price // 2
+            plr.balance += value
+            self.balance -= value
+            sold_property.mortgaged = False
+            msg = f"{plr.name} sold mortgaged {sold_property.name} to the bank for £{value}."
         else:
-            print("Cannot sell property with houses. Sell houses first.")
+            value = sold_property.price
+            plr.balance += value
+            self.balance -= value
+            msg = f"{plr.name} sold {sold_property.name} to the bank for £{value}."
+
+        plr.owned_properties.remove(sold_property)
+        sold_property.owner = None
+        print(msg)
+        return msg
+
 
     def sell_houses_to_the_bank(self, plr, selected_property):
         """Allows the player to sell houses to raise funds."""

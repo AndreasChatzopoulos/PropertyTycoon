@@ -99,6 +99,8 @@ class RightSidebar(PropertyTycoon):
         Returns:
             List of rendered surfaces for each wrapped line.
         """
+        if not text:
+            return []
         words = text.split(' ')
         lines = []
         current_line = ''

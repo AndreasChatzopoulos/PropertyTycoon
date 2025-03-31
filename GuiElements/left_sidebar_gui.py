@@ -55,6 +55,7 @@ class LeftSidebar(PropertyTycoon):
             "build_hotel": pygame.Rect(0, 0, self.sidebar_width - 20, 30),
             "(un)mortgage": pygame.Rect(0, 0, self.sidebar_width - 20, 30),
             "sell_house": pygame.Rect(0, 0, self.sidebar_width - 20, 30),
+            "sell_property": pygame.Rect(0, 0, self.sidebar_width - 20, 30),
         }
 
         self.log_event = event_logger if event_logger else print  # Logger fallback
@@ -137,8 +138,9 @@ class LeftSidebar(PropertyTycoon):
 
         # Action buttons (build, mortgage, etc.)
         font = pygame.font.Font(None, 20)
-        start_y = self.popup_rect.bottom - 150
-        spacing = 35
+        start_y = self.popup_rect.bottom - (len(self.popup_buttons) * 30 + 20)
+        spacing = 30
+
 
         for i, (key, rect) in enumerate(self.popup_buttons.items()):
             rect.x = self.popup_rect.x + 10
@@ -201,6 +203,12 @@ class LeftSidebar(PropertyTycoon):
                                 message = self.game.bank.sell_houses_to_the_bank(self.game.players[self.game.current_player_index], selected_property)
                                 self.log_event(message)
                                 pass
+                            elif key == "sell_property":
+                                message = self.game.bank.sell_property_to_the_bank(
+                                    self.game.players[self.game.current_player_index],
+                                    selected_property
+                                )
+                                self.log_event(message)
                         else:
                             self.log_event(f"{key.replace('_', ' ').title()} clicked (no property selected)")
 
