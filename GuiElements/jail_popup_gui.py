@@ -75,56 +75,44 @@ class JailPopup:
 
 
     def handle_choice(self, choice):
+        player = self.player
+        game = self.game
+
         if choice == "roll":
-            die1, die2, is_double = self.player.roll_dice()
-            if is_double:
-                self.player.jail_turns = 0
-                self.player.in_jail = False
-                self.game.log_event(f"🎲 {self.player.name} rolled a double and escaped jail!")
-                self.player.move(die1, die2, is_double)
-                self.visible = False
-            else:
-                self.player.jail_turns += 1
-                self.game.log_event(f"{self.player.name} did not roll a double (Rolled {die1} + {die2}).")
-                if self.player.jail_turns >= 2:
-                    self.player.in_jail = False
-                    self.player.jail_turns = 0
-                    self.player.position = 11 
-                    self.game.log_event(f"{self.player.name} has served their time and is now Just Visiting.")
-                self.visible = False
+            #  Flag player to roll animated dice in main loop
+            player.wants_to_roll_in_jail = True
+            self.visible = False
 
         elif choice == "pay":
-            if self.player.balance >= 50:
-                self.player.balance -= 50
-                self.game.fines += 50
-                self.player.jail_turns = 0
-                self.player.in_jail = False
-                self.player.position = 11  
-                self.game.log_event(f"💸 {self.player.name} paid £50 to get out of jail.")
+            if player.balance >= 50:
+                player.balance -= 50
+                game.fines += 50
+                player.jail_turns = 0
+                player.in_jail = False
+                player.wants_to_roll_after_paying_jail = True  #  New flag
+                game.log_event(f"💸 {player.name} paid £50 to get out of jail.")
                 self.visible = False
             else:
-                self.game.log_event(f"❌ {self.player.name} doesn't have enough money to pay.")
+                game.log_event(f" {player.name} doesn't have enough money to pay.")
 
         elif choice == "card":
-            if self.player.get_out_of_jail_cards > 0:
-                self.player.get_out_of_jail_cards -= 1
-                self.player.jail_turns = 0
-                self.player.in_jail = False
-                self.player.position = 11 
-                if hasattr(self.game.cards, "return_jail_card_to_bottom"):
-                    self.game.cards.return_jail_card_to_bottom()
-                self.game.log_event(f"🎟️ {self.player.name} used a Get Out of Jail Free card.")
+            if player.get_out_of_jail_cards > 0:
+                player.get_out_of_jail_cards -= 1
+                player.jail_turns = 0
+                player.in_jail = False
+                player.position = 11  # Just Visiting
+                if hasattr(game.cards, "return_jail_card_to_bottom"):
+                    game.cards.return_jail_card_to_bottom()
+                game.log_event(f" {player.name} used a Get Out of Jail Free card.")
                 self.visible = False
             else:
-                self.game.log_event(f"❌ {self.player.name} has no Get Out of Jail Free cards.")
-                #  Don't close popup — let them try another option
+                game.log_event(f" {player.name} has no Get Out of Jail Free cards.")
 
         elif choice == "wait":
-            self.player.jail_turns += 1
-            self.game.log_event(f"{self.player.name} chose to wait in jail (Turn {self.player.jail_turns}/2).")
-            if self.player.jail_turns >= 2:
-                self.player.jail_turns = 0
-                self.player.in_jail = False
-                self.player.position = 11
-                self.game.log_event(f"{self.player.name} has served their sentence and is now Just Visiting.")
+            player.jail_turns += 1
+            game.log_event(f"{player.name} chose to wait in jail (Turn {player.jail_turns}/3).")
+            if player.jail_turns >= 3:
+                player.jail_turns = 0
+                player.in_jail = False
+                game.log_event(f"{player.name} has served their sentence and is now Just Visiting.")
             self.visible = False

@@ -71,6 +71,10 @@ class PropertyTycoon:
         self.pending_roll = None
         self.waiting_for_dice = False
 
+        self.jail_action_pending = False
+        self.jail_action_type = None  
+        self.jail_player = None
+
 
 
         from GuiElements.right_sidebar_gui import RightSidebar
@@ -353,7 +357,45 @@ class PropertyTycoon:
             self.draw()
 
             if self.state == "board":
-                # Wait for dice animation to complete
+                player = self.game.players[self.game.current_player_index]
+
+                if getattr(player, "wants_to_roll_in_jail", False) and not self.dice.rolling:
+                    self.dice.start_roll_animation()
+                    player.awaiting_jail_roll_result = True
+                    player.wants_to_roll_in_jail = False
+
+                if getattr(player, "awaiting_jail_roll_result", False) and not self.dice.rolling:
+                    die1, die2 = self.dice.get_dice_result()
+                    is_double = die1 == die2
+
+                    if is_double:
+                        player.jail_turns = 0
+                        player.in_jail = False
+                        self.game.log_event(f"🎲 {player.name} rolled a double ({die1}, {die2}) and escaped jail!")
+                        player.move(die1, die2, is_double)
+                    else:
+                        player.jail_turns += 1
+                        self.game.log_event(f"{player.name} failed to roll a double ({die1}, {die2}).")
+
+                        if player.jail_turns >= 3:
+                            player.jail_turns = 0
+                            player.in_jail = False
+                            self.game.log_event(f"⏳ {player.name} served 3 turns in jail and is now free.")
+
+                    player.awaiting_jail_roll_result = False
+
+                if getattr(player, "wants_to_roll_after_paying_jail", False) and not self.dice.rolling:
+                    self.dice.start_roll_animation()
+                    player.awaiting_post_jail_roll = True
+                    player.wants_to_roll_after_paying_jail = False
+
+                if getattr(player, "awaiting_post_jail_roll", False) and not self.dice.rolling:
+                    die1, die2 = self.dice.get_dice_result()
+                    is_double = die1 == die2
+                    player.move(die1, die2, is_double)
+                    self.game.log_event(f"{player.name} moved {die1 + die2} steps after paying to get out of jail.")
+                    player.awaiting_post_jail_roll = False
+
                 if self.waiting_for_dice and not self.dice.rolling:
                     self.pending_roll = self.dice.get_dice_result()
                     self.waiting_for_dice = False
@@ -365,31 +407,20 @@ class PropertyTycoon:
                     self.game.play_turn(die1, die2)
                     self.first_turn_pending = False
 
-                player = self.game.players[self.game.current_player_index]
-
-                # Show JailPopup if this player is in jail and is a human
                 if player.in_jail and player.identity == "Human":
                     if not self.jail_popup or self.jail_popup.player != player:
                         self.jail_popup = JailPopup(self.screen, player, self.game)
                 else:
                     self.jail_popup = None
 
-                # Handle Auction Popup
                 if self.auction_popup:
                     if not self.auction_popup.visible:
                         self.auction_popup = None
                 elif hasattr(self.game, 'start_auction_popup'):
                     prop = self.game.bank.properties.get(player.position)
-
                     eligible_bidders = [p for p in self.game.players if p.passed]
-
-                    if (
-                        prop and
-                        prop.owner is None and
-                        len(eligible_bidders) > 1
-                    ):
+                    if prop and prop.owner is None and len(eligible_bidders) > 1:
                         self.auction_popup = AuctionPopup(self.screen, eligible_bidders, prop, self.game)
-
                     del self.game.start_auction_popup
                     if hasattr(self.game, 'auction_eligible_players'):
                         del self.game.auction_eligible_players
@@ -398,6 +429,3 @@ class PropertyTycoon:
 
         pygame.quit()
         sys.exit()
-
-
-
