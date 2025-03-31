@@ -163,6 +163,14 @@ class PropertyTycoon:
                         self.start_board_game()
 
             elif self.state == "board":
+                if self.jail_popup and self.jail_popup.visible:
+                    self.jail_popup.handle_event(event)
+                    return  
+
+                if self.auction_popup and self.auction_popup.visible:
+                    self.auction_popup.handle_event(event)
+                    return 
+
                 self.handle_board_events(event)
 
                 if not self.right_sidebar.show_trade_menu:
@@ -171,12 +179,6 @@ class PropertyTycoon:
                 self.left_sidebar.handle_event(event)
                 self.right_sidebar.handle_event(event)
 
-                if self.jail_popup:
-                    self.jail_popup.handle_event(event)
-                
-                if self.auction_popup:
-                    self.auction_popup.handle_event(event) 
-                    return
 
     def start_token_selection(self):
         """

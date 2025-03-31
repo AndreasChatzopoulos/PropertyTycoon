@@ -1,27 +1,27 @@
 {
     "players": [
         {
-            "name": "Ruairi",
+            "name": "i",
             "token": "smartphone",
             "identity": "Human"
         },
         {
-            "name": "Andreas",
+            "name": "t",
             "token": "iron",
             "identity": "Human"
         },
         {
-            "name": "Ethan",
+            "name": "t",
             "token": "hatstand",
             "identity": "Human"
         },
         {
-            "name": "Jessica",
+            "name": "t",
             "token": "cat",
             "identity": "Human"
         },
         {
-            "name": "Tom",
+            "name": "t",
             "token": "boot",
             "identity": "Human"
         }
