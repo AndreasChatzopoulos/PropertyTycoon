@@ -16,6 +16,7 @@ class Property:
         self.houses = 0
         self.owner = None
         self.mortgaged = False
+        self.auctioned = False # Wether the property has been auctioned this turn or not
 
     def calculate_rent(self, dice_roll=0):
         """Determines rent based on property type, ownership, and houses/hotels."""
