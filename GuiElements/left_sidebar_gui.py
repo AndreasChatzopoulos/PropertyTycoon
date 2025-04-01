@@ -91,7 +91,7 @@ class LeftSidebar(PropertyTycoon):
 
         properties = [prop_object.name if not prop_object.mortgaged else "M - "+prop_object.name for prop_object in self.game.players[self.game.current_player_index].owned_properties]
         properties = [
-            "H" * prop_object.houses + ("M" if prop_object.mortgaged else "") + (" - " if prop_object.houses > 0 or prop_object.mortgaged else "") + prop_object.name
+            ("HOTEL" if prop_object.houses > 4 else "H" * prop_object.houses) + ("M" if prop_object.mortgaged else "") + (" - " if prop_object.houses > 0 or prop_object.mortgaged else "") + prop_object.name
             for prop_object in self.game.players[self.game.current_player_index].owned_properties
         ]
 
