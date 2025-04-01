@@ -1,27 +1,27 @@
 {
     "players": [
         {
-            "name": "i",
+            "name": "Ruairi",
             "token": "smartphone",
             "identity": "Human"
         },
         {
-            "name": "t",
+            "name": "Player 2",
             "token": "iron",
             "identity": "Human"
         },
         {
-            "name": "t",
+            "name": "Player 3",
             "token": "hatstand",
             "identity": "Human"
         },
         {
-            "name": "t",
+            "name": "Player 4",
             "token": "cat",
             "identity": "Human"
         },
         {
-            "name": "t",
+            "name": "Player 5",
             "token": "boot",
             "identity": "Human"
         }

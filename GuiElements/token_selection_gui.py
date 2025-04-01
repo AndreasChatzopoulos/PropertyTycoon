@@ -54,6 +54,8 @@ class TokenSelectionScreen:
         self.name_input_active = False
         self.name_input_text = ""
         self.name_input_rect = pygame.Rect(self.width // 2 - 100, 250, 200, 40)
+        for i in range(1, self.human_players + 1):
+            self.player_names[i] = f"Player {i}"
 
 
     def load_token_images(self):
@@ -110,7 +112,7 @@ class TokenSelectionScreen:
         input_label = self.font.render("Enter name:", True, (255, 255, 255))
         self.screen.blit(input_label, (100, 270))
 
-        name_text = self.player_names.get(self.current_player, "")
+        name_text = self.player_names.get(self.current_player, f"Player {self.current_player}")
         box_border_color = (255, 255, 255) if self.name_input_active else (200, 200, 200)
         box_fill_color = (240, 240, 240)  
         text_color = (0, 0, 0) 
@@ -201,16 +203,16 @@ class TokenSelectionScreen:
         if self.current_player in self.confirmed_players:
             return
 
-        name_entered = self.player_names.get(self.current_player, "").strip()
         selected_token = self.selected_tokens.get(self.current_player)
 
-        if not name_entered:
-            print(" Player must enter a name before confirming.")
+        if not selected_token:
+            print("Player must select a token before confirming.")
             return
 
-        if not selected_token:
-            print(" Player must select a token before confirming.")
-            return
+        # Use default name if name is empty
+        name_entered = self.player_names.get(self.current_player, "").strip()
+        if not name_entered:
+            self.player_names[self.current_player] = f"Player {self.current_player}"
 
         self.confirmed_players.add(self.current_player)
 
@@ -222,6 +224,7 @@ class TokenSelectionScreen:
             self.selected_token = None
         else:
             self.assign_ai_tokens()
+
 
 
     def assign_ai_tokens(self):
