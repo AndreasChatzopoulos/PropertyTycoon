@@ -160,7 +160,7 @@ class Game:
         auction_players = auction_players[self.current_player_index:] + auction_players[:self.current_player_index]
         prop = self.bank.properties.get(player.position, None)
         self.ui.auction_popup = AuctionPopup(self.ui.screen, auction_players, prop, self)
-        prop.auctioned = True # Assigned the property already auctioned for this turm
+        prop.already_auctioned = True # Assigned the property already auctioned for this turm
 
     # def player_options(self, player):
     #     """Displays actions a player can take after their turn."""
