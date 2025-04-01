@@ -84,6 +84,7 @@ class PropertyTycoon:
 
         self.jail_popup = None
         self.auction_popup = None
+        self.bankruptcy_popup = None
 
     def roll_and_play_next_turn(self):
         self.dice.start_roll_animation()
@@ -139,7 +140,11 @@ class PropertyTycoon:
                 self.jail_popup.draw()
 
             if self.auction_popup:
-                self.auction_popup.draw()   
+                self.auction_popup.draw()  
+
+            if self.bankruptcy_popup:
+                self.bankruptcy_popup.draw()
+ 
 
             pygame.display.flip()
 
@@ -170,6 +175,11 @@ class PropertyTycoon:
                 if self.auction_popup and self.auction_popup.visible:
                     self.auction_popup.handle_event(event)
                     return 
+                
+                if self.bankruptcy_popup and self.bankruptcy_popup.visible:
+                    self.bankruptcy_popup.handle_event(event)
+                    return
+
 
                 self.handle_board_events(event)
 
@@ -202,7 +212,6 @@ class PropertyTycoon:
         player_data = []
 
         for i in range(1, total_players + 1):
-            # Use the custom name if provided; fallback to "Player {i}"
             name = self.token_selection_screen.player_names.get(i, f"Player {i}")
             token = self.players[i]
             identity = "Human" if i <= self.human_players else "Basic Bot"
@@ -353,6 +362,13 @@ class PropertyTycoon:
         """Remove all highlights from board spaces."""
         for space in self.board.spaces:
             space.set_highlight(False)
+
+    def create_bankruptcy_popup(self, player, amount_due, creditor):
+        from GuiElements.bankruptcy_gui import BankruptcyPopup
+        popup = BankruptcyPopup(self.screen, player, amount_due, creditor)
+        self.bankruptcy_popup = popup
+        return popup
+
 
     def run(self):
         """Main game loop that keeps the game running and updating."""

@@ -143,28 +143,26 @@ class Bank:
 
 
     def sell_houses_to_the_bank(self, plr, selected_property):
-        """Allows the player to sell houses to raise funds."""
+        """Allows the player to sell one house to the bank for half the build cost."""
         if selected_property.houses == 0:
-            print(
-                f" No houses available to sell on {selected_property.name} ")
-            return (f" No houses available to sell on {selected_property.name} ")
+            message = f"No houses available to sell on {selected_property.name}."
+            print(message)
+            return message
 
-        # while True:
-            # try:
-                # num = int(input(f"How many houses do you want to sell from {selected_property.name}? "))
-        num = 1
-        if 0 < num <= selected_property.houses:
-            total_value = selected_property.house_cost * num
-            plr.balance += total_value
-            self.balance += total_value
-            selected_property.houses -= num
-            print(f" Sold {num} house(s) from {selected_property.name} for £{total_value}.")
-            return (f" Sold {num} house(s) from {selected_property.name} for £{total_value}.")
-        else:
-            print(f" Invalid number. {selected_property.name} has {selected_property.houses} house(s).")
-            return (f" Invalid number. {selected_property.name} has {selected_property.houses} house(s).")
-            # except ValueError:
-            #     print(" Please enter a valid number.")
+        num = 1  # 1 house at a time
+        sale_value = (selected_property.house_cost // 2) * num
+
+        selected_property.houses -= num
+        plr.balance += sale_value
+
+        message = f"🔨 {plr.name} sold {num} house(s) from {selected_property.name} for £{sale_value}."
+        print(message)
+        if hasattr(plr.game, "log_event"):
+            plr.game.log_event(message)
+
+        return message
+
+
 
     def mortgage_property(self, plr, selected_property):
         """Allows the player to mortgage a property to raise funds"""

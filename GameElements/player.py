@@ -144,10 +144,13 @@ class Player:
 
 
     def pay_tax(self, amount):
-        self.balance -= amount
-        message = f"{self.name} paid tax of £{amount}!"
-        print(message)
-        self.game.log_event(message)
+        if self.balance >= amount:
+            self.balance -= amount
+            self.game.log_event(f"{self.name} paid tax of £{amount}!")
+        else:
+            self.game.log_event(f"{self.name} cannot afford tax of £{amount}!")
+            self.avoid_bankruptcy(amount, None)
+
 
     def pay_rent(self, property_at_position, roll):
         """Handles rent payment when landing on an owned property."""
@@ -201,101 +204,81 @@ class Player:
             except ValueError:
                 print("Invalid input. Please enter a number.")
 
-    def avoid_bankruptcy(self, amount_due, creditor):  # Update bank.py and creditor balance
+    def avoid_bankruptcy(self, amount_due, creditor):
+        """
+        Trigger the bankruptcy process. For bots, resolve immediately.
+        For humans, trigger the bankruptcy popup.
+        """
+        if self.identity != "Human":
+            # Bot automatically tries to sell/mortgage properties to raise funds
+            for prop in sorted(self.owned_properties, key=lambda p: p.price):
+                if self.balance >= amount_due:
+                    break
 
-        # Interactive method allowing the player to choose how to avoid bankruptcy.
+                if prop.houses > 0:
+                    self.game.bank.sell_houses_to_the_bank(self, prop)
 
-        print(f"{self.name} needs to pay {amount_due} to {creditor.name if creditor else 'the bank.py'}.")
+                if not prop.mortgaged and self.balance < amount_due:
+                    self.game.bank.mortgage_property(self, prop)
 
-        while self.balance < amount_due:
+                if prop.houses == 0 and self.balance < amount_due:
+                    self.game.bank.sell_property_to_the_bank(self, prop)
 
-            if not self.owned_properties:  # Prevents infinite loop if no assets
-                self.declare_bankruptcy(creditor, amount_due)
-                return
-
-            print(f" Current Balance: £{self.balance}")
-            print(f" Amount Due: £{amount_due}")
-
-            options = []  # Produces the options dynamically so there is no redundancy
-            if any(p.houses > 0 for p in self.owned_properties):  # Checks if the player has any properties with houses
-                options.append("Sell Houses/Hotels")
-            if any(not p.mortgaged for p in
-                   self.owned_properties):  # Checks if the player has any unmortgaged properties
-                options.append("Mortgage Properties")
-            if any(p.houses == 0 for p in
-                   self.owned_properties):  # Checks if the player has any properties available to sell
-                options.append("Sell Properties to the Bank")
-            if len(self.owned_properties) > 1:  # Checks if the player has any available properties to trade
-                options.append("Offer a Trade")
-            options.append("Declare Bankruptcy")
-
-            # Print available choices
-            for i, option in enumerate(options, 1):
-                print(f"{i}. {option}")
-
-            # Get player's choice
-            try:
-                if self.identity == "Human":
-                    choice = int(input("Enter the number of your choice: "))
-                else:
-                    choice = self.bot_avoid_bankruptcy(options, amount_due, creditor)
-                if choice < 1 or choice > len(options):
-                    print("Invalid choice. Try again.")
-                    continue
-            except ValueError:
-                print("Please enter a number.")
-                continue
-
-            # Execute the chosen option
-            action = options[choice - 1]
-            if "Sell Houses" in action:
-                prop = self.select_property("Sell Houses")
-                self.game.bank.sell_houses_to_the_bank(self, prop)
-            elif "Mortgage" in action:
-                prop = self.select_property("Mortgage Property")
-                self.game.bank.mortgage_property(self, prop)
-            elif "Sell Properties" in action:
-                prop = self.select_property("Sell Property")
-                self.game.bank.sell_property_to_the_bank(self, prop)
-            elif "Offer a Trade" in action:  # Method to select player form game's players
-                self.game.propose_trade(self, )
-            elif "Declare Bankruptcy" in action:
-                self.declare_bankruptcy(creditor, amount_due)
-                return
-
-            # Stop if enough money has been raised
             if self.balance >= amount_due:
-                break
+                self.balance -= amount_due
+                if creditor:
+                    creditor.balance += amount_due
+                    self.game.log_event(f"{self.name} paid £{amount_due} to {creditor.name}.")
+            else:
+                self.declare_bankruptcy(creditor, amount_due)
+            return
 
-            # Pay the creditor if the balance is sufficient
-        if self.balance >= amount_due:
-            self.balance -= amount_due
-            if creditor:
-                creditor.balance += amount_due
-                print(
-                    f" {self.name} successfully paid £{amount_due} to {creditor.name if creditor else 'the bank.py'}.")
-        else:
-            self.declare_bankruptcy(creditor, amount_due)
+        # HUMAN: Open BankruptcyPopup (handled by UI)
+        self.game.ui.bankruptcy_popup = self.game.ui.create_bankruptcy_popup(self, amount_due, creditor)
+
 
     def declare_bankruptcy(self, creditor, debt):
-        """Handle bankruptcy"""""
+        """
+        Handle bankruptcy when the player can't raise enough funds.
+        Transfers assets and removes player from the game.
+        """
 
-        print(f"{self.name} is bankrupt! Cannot pay {debt} to {creditor.name if creditor else 'the bank.py'}.")
+        print(f"{self.name} is bankrupt! Cannot pay £{debt} to {creditor.name if creditor else 'the Bank'}.")
+
         if creditor:
-            for properties in self.owned_properties:
-                properties.transfer_property(creditor)
-
+            for prop in self.owned_properties[:]:
+                prop.transfer_property(creditor)
         else:
-            self.return_properties_to_bank()  # Return to bank.py if no creditor
+            self.return_properties_to_bank()
 
+        self.owned_properties.clear()
         self.balance = 0
-        print(f"💔 {self.name} has left the game.")
+
+        self.game.players.remove(self)
+
+        if self.game.players and self in self.game.players:
+            index = self.game.players.index(self)
+            self.game.players.remove(self)
+            if self.game.current_player_index >= len(self.game.players):
+                self.game.current_player_index = 0
+            elif index < self.game.current_player_index:
+                self.game.current_player_index -= 1
+
+
+        message = f" {self.name} has gone bankrupt and is out of the game."
+        print(message)
+        self.game.log_event(message)
+
+        if hasattr(self.game.ui, "bankruptcy_popup") and self.game.ui.bankruptcy_popup:
+            self.game.ui.bankruptcy_popup.visible = False
+            self.game.ui.bankruptcy_popup = None
+
 
     def return_properties_to_bank(self):
         for prop in self.owned_properties[:]:
             self.owned_properties.remove(prop)
-            self.game.bank.properties.append(prop)
-            prop.owner = None
+            prop.owner = None  
+
 
     def manage_property(self):
         """
@@ -401,14 +384,21 @@ class Player:
     def assess_property_repair(self, game, house_cost, hotel_cost):
         """Charges players for property repairs."""
         total_houses = sum(p.houses for p in self.owned_properties if not p.mortgaged)
-        total_hotels = sum(1 for p in self.owned_properties if p.houses == 5)
+        total_hotels = sum(1 for p in self.owned_properties if p.houses == 5 and not p.mortgaged)
 
         total_cost = (total_houses * house_cost) + (total_hotels * hotel_cost)
 
         if total_cost > 0:
-            print(f"🏚️ {self.name} pays £{total_cost} for property repairs.")
-            self.balance -= total_cost
-            game.fines += total_cost
+            print(f"{self.name} must pay £{total_cost} for property repairs.")
+            
+            if self.balance >= total_cost:
+                self.balance -= total_cost
+                game.fines += total_cost
+                game.log_event(f"{self.name} paid £{total_cost} for property repairs.")
+            else:
+                game.log_event(f"{self.name} cannot afford £{total_cost} for property repairs.")
+                self.avoid_bankruptcy(total_cost, None)
+
 
     def bot_bid(self, highest_bid, property):
         #The intermediate bot will bid 10% of the difference between the highest bid and the property value, up to 1.5x the property value.
