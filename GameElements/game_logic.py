@@ -30,6 +30,8 @@ class Game:
         #self.player_options(player)
         if player.position == 11 and player.in_jail:
             player.consecutive_doubles = 0
+        
+
 
         
     
@@ -86,8 +88,9 @@ class Game:
 
         if property_at_position:
             if property_at_position.owner and property_at_position.owner != player:
-                rent = property_at_position.calculate_rent()
-                player.pay_rent(property_at_position, rent)
+                last_roll = player.last_roll if hasattr(player, 'last_roll') else 0
+                rent = property_at_position.calculate_rent(last_roll)
+                player.pay_rent(property_at_position, last_roll)
 
             elif property_at_position.owner is None:
                 if not player.passed:

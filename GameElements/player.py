@@ -54,6 +54,7 @@ class Player:
             self.consecutive_doubles = 0
 
         steps = die1 + die2
+        self.last_roll = steps
         self.game.log_event(f"{self.name} moves {steps} steps.")
 
         for _ in range(steps):

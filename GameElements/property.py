@@ -18,14 +18,17 @@ class Property:
         self.mortgaged = False
         self.already_auctioned = False # Wether the property has been auctioned this turn or not
 
-    def calculate_rent(self, dice_roll=0):
+    def calculate_rent(self, dice_roll=None):
         """Determines rent based on property type, ownership, and houses/hotels."""
         if self.group == "Utilities":
             if self.owner:
                 utilities_count = sum(1 for p in self.owner.owned_properties if p.group == "Utilities")
                 multiplier = 4 if utilities_count == 1 else 10
-                return dice_roll * multiplier if dice_roll else 0
-        
+                if dice_roll is not None:
+                    return dice_roll * multiplier
+                else:
+                    return 0  # Defensive: no roll passed
+
         elif self.group == "Station":
             if self.owner:
                 station_count = sum(1 for p in self.owner.owned_properties if p.group == "Station")
@@ -37,6 +40,7 @@ class Property:
             return self.rent[self.houses]
 
         return 0
+
 
     def property_details(self):
         return f"{self.name} | Owner: {self.owner.name} | Houses: {self.houses} | Rent: {self.calculate_rent()}"
