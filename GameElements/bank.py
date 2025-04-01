@@ -214,11 +214,18 @@ class Bank:
                 f"{selected_property.owner} is attempting to build more than the maximum number of houses on {selected_property.name}  which is 5 for any given property.")
             return ("{selected_property.owner} is attempting to build more than the maximum number of houses on {selected_property.name}  which is 5 for any given property.")
 
-        selected_property.houses += number_of_houses
-        plr.balance -= total_cost
-        self.balance += total_cost
-        print(f"{selected_property.owner.name} built {number_of_houses} houses on {selected_property.name}")
-        return (f"{selected_property.owner.name} built {number_of_houses} houses on {selected_property.name}")
+        group_properties = [prop for prop in selected_property.owner.owned_properties if prop.group == selected_property.group]
+        min_houses = min(prop.houses for prop in group_properties)
+        if selected_property.houses + number_of_houses > min_houses + 1:
+            print(
+                f"{selected_property.owner} is attempting to build houses on {selected_property.name}, but the number of houses in the group must be symmetrical (difference of at most 1).")
+            return (f"{selected_property.owner} is attempting to build houses on {selected_property.name}, but the number of houses in the group must be symmetrical (difference of at most 1).")
+        else :
+            selected_property.houses += number_of_houses
+            plr.balance -= total_cost
+            self.balance += total_cost
+            print(f"{selected_property.owner.name} built {number_of_houses} houses on {selected_property.name}")
+            return (f"{selected_property.owner.name} built {number_of_houses} houses on {selected_property.name}")
 
     def pay_player(self, player, amount):
         """Pays a player the specified amount."""
