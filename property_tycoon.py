@@ -105,7 +105,7 @@ class PropertyTycoon:
         elif self.state == "board":
             self.screen.fill((200, 200, 200))
 
-            self.board.draw(self.screen)
+            self.board.draw(self.screen, self.game.bank.properties.items())
             self.elements.draw()
 
             self.left_sidebar.game = self.game

@@ -61,6 +61,7 @@ class Bank:
         highest_bidder, highest_bid = self.bid_property(active_bidders, auction_property)
 
         highest_bidder.balance -= highest_bid
+        self.balance += highest_bid
         auction_property.transfer_property(highest_bidder)
         print(f"🎉 {highest_bidder.name} won {auction_property.name} for £{highest_bid}")
 
@@ -201,23 +202,23 @@ class Bank:
 
         if not selected_property.check_completion():
             print(
-                f"{selected_property.owner} is attempting to build on {selected_property.name} a property of group {selected_property.group} which has not completed.")
-            return (f"Attempting to build on {selected_property.name} a property of group {selected_property.group} which has not completed.")
+                f"{selected_property.owner.name} is attempting to build on {selected_property.name} a property of group {selected_property.group} which has not completed.")
+            return (f"{selected_property.owner.name} is attempting to build on {selected_property.name} a property of group {selected_property.group} which has not completed.")
         elif selected_property.owner.balance < total_cost:
             print(
-                f"{selected_property.owner} doesn't have enough money to build {number_of_houses} on {selected_property.name}.")
-            return (f"{selected_property.owner} doesn't have enough money to build {number_of_houses} on {selected_property.name}.")
+                f"{selected_property.owner.name} doesn't have enough money to build {number_of_houses} on {selected_property.name}.")
+            return (f"{selected_property.owner.name} doesn't have enough money to build {number_of_houses} on {selected_property.name}.")
         elif selected_property.houses + number_of_houses > 5:  # Checks if the number exceeds the maximum number houses
             print(
-                f"{selected_property.owner} is attempting to build more than the maximum number of houses on {selected_property.name}  which is 5 for any given property.")
-            return ("{selected_property.owner} is attempting to build more than the maximum number of houses on {selected_property.name}  which is 5 for any given property.")
+                f"{selected_property.owner.name} is attempting to build more than the maximum number of houses on {selected_property.name}  which is 5 for any given property.")
+            return (f"{selected_property.owner.name} is attempting to build more than the maximum number of houses on {selected_property.name}  which is 5 for any given property.")
 
         group_properties = [prop for prop in selected_property.owner.owned_properties if prop.group == selected_property.group]
         min_houses = min(prop.houses for prop in group_properties)
         if selected_property.houses + number_of_houses > min_houses + 1:
             print(
-                f"{selected_property.owner} is attempting to build houses on {selected_property.name}, but the number of houses in the group must be symmetrical (difference of at most 1).")
-            return (f"{selected_property.owner} is attempting to build houses on {selected_property.name}, but the number of houses in the group must be symmetrical (difference of at most 1).")
+                f"{selected_property.owner.name} is attempting to build houses on {selected_property.name}, but the number of houses in the group must be symmetrical (difference of at most 1).")
+            return (f"{selected_property.owner.name} is attempting to build houses on {selected_property.name}, but the number of houses in the group must be symmetrical (difference of at most 1).")
         else :
             selected_property.houses += number_of_houses
             plr.balance -= total_cost

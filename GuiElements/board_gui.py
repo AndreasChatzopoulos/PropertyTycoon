@@ -93,7 +93,8 @@ class BoardGUI:
 
         return spaces
 
-    def draw(self, screen):
+    # change here
+    def draw(self, screen, prop_data):
         """
         Draw the board and all its spaces, including tooltips for hovered tiles.
 
@@ -105,9 +106,17 @@ class BoardGUI:
         dice_button_y = self.window_height - 100
         dice_button_width = 150
 
+        prop_data = [p[1] for p in prop_data]
         for space in self.spaces:
             space.draw(screen)
-            space.draw_popup(screen, dice_button_x, dice_button_y, dice_button_width)
+            rent = next((prop.rent for prop in prop_data if prop.name == space.name), None)
+            owner = next((prop.owner for prop in prop_data if prop.name == space.name), None)
+            houses = next((prop.houses for prop in prop_data if prop.name == space.name), None)
+            if rent:
+                rent = rent[houses]
+            if owner:
+                owner = owner.name
+            space.draw_popup(screen, dice_button_x, dice_button_y, dice_button_width, rent, owner)
 
     def handle_hover(self, mouse_pos):
         """

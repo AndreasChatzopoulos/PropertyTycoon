@@ -167,7 +167,8 @@ class RightSidebar(PropertyTycoon):
             if self.buy_property_button.collidepoint(x, y):
                 self.log_event("Buy Property Clicked")
                 message = self.game.prompt_property_purchase(self.game.players[self.game.current_player_index])
-                self.log_event(message)
+                if (message != "bought" and message != "declined") :
+                    self.log_event(message)
             elif self.trade_button.collidepoint(x, y):
                 self.show_trade_menu = True
                 self.log_event("Trade Menu Opened")

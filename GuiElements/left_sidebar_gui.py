@@ -35,7 +35,6 @@ class LeftSidebar(PropertyTycoon):
         self.manage_property_button = pygame.Rect(10, self.player_info_section.bottom + 10, self.sidebar_width - 20, 40)
 
         self.game = game
-        self.bank_balance = 50000
 
         # Property management state
         self.selected_property_name = None
@@ -66,11 +65,11 @@ class LeftSidebar(PropertyTycoon):
         pygame.draw.rect(self.screen, (0, 0, 0), self.sidebar_rect, 2)
 
         # Bank section
-        pygame.draw.rect(self.screen, (0, 100, 0), self.bank_section)
-        pygame.draw.rect(self.screen, (0, 0, 0), self.bank_section, 2)
+        # pygame.draw.rect(self.screen, (0, 100, 0), self.bank_section)
+        # pygame.draw.rect(self.screen, (0, 0, 0), self.bank_section, 2)
         font = pygame.font.Font(None, 24)
-        self.screen.blit(font.render("Bank", True, (255, 255, 255)), (self.bank_section.x + 10, self.bank_section.y + 10))
-        self.screen.blit(font.render(f"\u00a3{self.bank_balance}", True, (255, 255, 255)), (self.bank_section.x + 10, self.bank_section.y + 40))
+        # self.screen.blit(font.render("Bank", True, (255, 255, 255)), (self.bank_section.x + 10, self.bank_section.y + 10))
+        # self.screen.blit(font.render(f"\u00a3{self.game.bank.balance}", True, (255, 255, 255)), (self.bank_section.x + 10, self.bank_section.y + 40))
 
         # Player section
         pygame.draw.rect(self.screen, (0, 0, 128), self.player_info_section)

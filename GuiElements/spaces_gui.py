@@ -94,7 +94,7 @@ class SpacesGUI:
         """
         self.highlighted = highlight
 
-    def draw_popup(self, screen, dice_button_x, dice_button_y, dice_button_width):
+    def draw_popup(self, screen, dice_button_x, dice_button_y, dice_button_width, rent, owner):
         """
         Renders a pop-up box with property details when highlighted.
 
@@ -121,8 +121,8 @@ class SpacesGUI:
             font = pygame.font.Font(None, 28)
             text_name = font.render(self.name, True, (0, 0, 0))
             text_price = font.render(f"💰 Price: ${self.price}", True, (0, 0, 0))
-            text_rent = font.render(f"💵 Rent: ${self.rent}", True, (0, 0, 0)) if self.rent else None
-            text_owner = font.render(f"👤 Owner: {self.owner}", True, (0, 0, 0))
+            text_rent = font.render(f"💵 Rent: ${rent}", True, (0, 0, 0)) if self.rent else None
+            text_owner = font.render(f"👤 Owner: {owner}", True, (0, 0, 0))
 
             # Render lines
             screen.blit(text_name, (popup_x + 10, popup_y + 10))
