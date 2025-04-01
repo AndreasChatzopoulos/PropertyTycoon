@@ -173,16 +173,32 @@ class RightSidebar(PropertyTycoon):
                 self.log_event("Trade Menu Opened")
             elif self.end_turn_button.collidepoint(x, y):
                 self.log_event("End Turn Clicked")
+                current_player = self.game.players[self.game.current_player_index]
 
-                # check for auction
-                if self.game.eligible_to_buy(self.game.players[self.game.current_player_index]):
-                    eligible_bidders = self.game.get_eligible_auction_players()
-                    if len(eligible_bidders) > 1:
-                        print(f"{self.game.players[self.game.current_player_index].name} declined to buy the property. Starting auction!")
-                        self.game.start_auction(self.game.players[self.game.current_player_index])
+                # Check if the player can buy the property
+                if self.game.eligible_to_buy(current_player):
+                    prop = self.game.bank.properties.get(current_player.position, None)
+
+                    if prop and not prop.already_auctioned:
+                        eligible_bidders = self.game.get_eligible_auction_players()
+                        if len(eligible_bidders) > 1:
+                            self.log_event(f"{current_player.name} declined to buy {prop.name}. Starting auction!")
+                            self.game.start_auction(current_player)
+                        else:
+                            self.log_event("Not enough eligible bidders to start an auction. Property remains unowned.")
+                            prop.already_auctioned = False
+                            super().roll_and_play_next_turn()
                     else:
-                        self.log_event(" Not enough eligible bidders to start an auction. Property remains unowned.")
-                super().roll_and_play_next_turn() 
+                        self.log_event(f"{prop.name if prop else 'Property'} already auctioned this turn. Skipping auction.")
+                        prop.already_auctioned = False
+                        super().roll_and_play_next_turn()
+                else:
+                    # Check if an auction is still in progress
+                    auction = self.game.ui.auction_popup
+                    if auction and (auction.visible or not auction.finished):
+                        self.log_event("Auction in progress. Cannot end turn.")
+                    else:
+                        super().roll_and_play_next_turn()
             elif self.save_game_button.collidepoint(x, y):
                 self.log_event("Game Saved")
             elif self.leave_game_button.collidepoint(x, y):
