@@ -76,6 +76,10 @@ class PropertyTycoon:
         self.jail_action_type = None  
         self.jail_player = None
 
+        self.player_turn_count = {}
+        self.time_limit_reached = False
+        self.turns_when_times_up = None
+
 
 
         from GuiElements.right_sidebar_gui import RightSidebar
@@ -138,11 +142,11 @@ class PropertyTycoon:
                 timer_rect = timer_render.get_rect(bottomright=(self.width - 20, self.height - 20))
                 self.screen.blit(timer_render, timer_rect)
 
-                if remaining_time <= 0:
-                    print("Game Over: Time is up!")
-                    # self.abridged_game_mode_over_triggered = True
-                    self.game.determine_winner_abridged()
-                    # self.running = False
+                if remaining_time <= 0 and not hasattr(self, 'abridged_mode_active'):
+                    self.abridged_mode_active = True
+                    self.turns_target = max(p.turns_taken for p in self.game.players)
+                    self.right_sidebar.log_event("⏱️ Time is up! Everyone will finish this round before the winner is determined.")
+
 
             if self.jail_popup:
                 self.jail_popup.draw()
@@ -460,7 +464,9 @@ class PropertyTycoon:
                     pygame.time.wait(1000)
                     die1, die2 = self.pending_roll
                     self.game.play_turn(die1, die2)
+                    player.turns_taken += 1
                     self.first_turn_pending = False
+
 
                 if player.in_jail and player.identity == "Human":
                     if not self.jail_popup or self.jail_popup.player != player:
@@ -479,6 +485,14 @@ class PropertyTycoon:
                     del self.game.start_auction_popup
                     if hasattr(self.game, 'auction_eligible_players'):
                         del self.game.auction_eligible_players
+
+
+                if getattr(self, 'abridged_mode_active', False) and not getattr(self, 'abridged_mode_complete', False):
+                    if all(p.turns_taken >= self.turns_target for p in self.game.players):
+                        winner_name = self.game.determine_winner_abridged()
+                        self.trigger_end_game_popup(winner_name)
+                        self.abridged_mode_complete = True
+
 
             self.clock.tick(30)
 

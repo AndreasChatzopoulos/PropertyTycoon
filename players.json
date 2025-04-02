@@ -9,6 +9,11 @@
             "name": "Player 2",
             "token": "iron",
             "identity": "Human"
+        },
+        {
+            "name": "Player 3",
+            "token": "hatstand",
+            "identity": "Human"
         }
     ]
 }

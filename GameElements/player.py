@@ -18,6 +18,7 @@ class Player:
         self.get_out_of_jail_cards = 0
         self.jail_turns = 0
         self.consecutive_doubles = 0
+        self.turns_taken = 0
 
     def roll_dice(self):
         die1, die2 = random.randint(1, 6), random.randint(1, 6)

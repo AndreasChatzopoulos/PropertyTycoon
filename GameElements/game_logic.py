@@ -30,6 +30,8 @@ class Game:
         #self.player_options(player)
         if player.position == 11 and player.in_jail:
             player.consecutive_doubles = 0
+
+        player.turns_taken += 1
         
 
 
@@ -369,9 +371,15 @@ class Game:
             elif networth == highest_networth:
                 winners.append(p.name)
 
-        if hasattr(self, "ui") and self.ui:
-            self.ui.trigger_end_game_popup(winners)
-            self.running = False
+        if len(winners) == 1:
+            winner_str = winners[0]
+            self.log_event(f"Abridged mode ended. {winner_str} wins with £{highest_networth} in assets!")
+        else:
+            winner_str = " & ".join(winners)
+            self.log_event(f"Abridged mode ended in a draw! {winner_str} share the win with £{highest_networth} in assets each.")
+
+        return winner_str  # Return all winners as a string
+
 
     def remove_player(self, player):
         player.return_properties_to_bank()
