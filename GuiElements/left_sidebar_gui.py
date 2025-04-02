@@ -51,7 +51,6 @@ class LeftSidebar(PropertyTycoon):
         # Action buttons in the popup
         self.popup_buttons = {
             "build_house": pygame.Rect(0, 0, self.sidebar_width - 20, 30),
-            "build_hotel": pygame.Rect(0, 0, self.sidebar_width - 20, 30),
             "(un)mortgage": pygame.Rect(0, 0, self.sidebar_width - 20, 30),
             "sell_house": pygame.Rect(0, 0, self.sidebar_width - 20, 30),
             "sell_property": pygame.Rect(0, 0, self.sidebar_width - 20, 30),
@@ -176,6 +175,8 @@ class LeftSidebar(PropertyTycoon):
                 self.toggle_popup("manage_properties")
 
             elif self.active_popup == "manage_properties" and not self.just_scrolled:
+                if (self.game.players[self.game.current_player_index].identity != "Human"):
+                    return
                 for rect, prop_name in self.property_buttons:
                     if rect.collidepoint(x, y):
                         self.selected_property_name = prop_name

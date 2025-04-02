@@ -57,6 +57,9 @@ class AuctionPopup:
         if not self.visible:
             return
 
+        if self.current_player().identity != 'Human':
+            self.handle_bid()
+
         if event.type == pygame.MOUSEMOTION:
             self.hovered_button = None
             if self.place_bid_button.collidepoint(event.pos):
@@ -79,23 +82,21 @@ class AuctionPopup:
             elif event.unicode.isdigit():
                 self.input_text += event.unicode
 
-        elif event.type == pygame.USEREVENT + 1:
-            pygame.time.set_timer(pygame.USEREVENT + 1, 0)  # Stop timer after it fires
-            bot = self.current_player()
-            bid = bot.bot_bid(self.highest_bid, self.property)
-
-            if bid == "exit":
-                self.exited.add(bot)
-                self.advance_turn()
-            else:
-                self.input_text = bid
-                self.handle_bid()
-
 
     def handle_bid(self):
         try:
-            bid = int(self.input_text)
             player = self.current_player()
+            if player.identity == "Human":
+                bid = int(self.input_text)
+            else:
+                bid = player.bot_bid(self.highest_bid, self.property)
+                if bid == "exit":
+                    self.game.log_event(f"🚫 {player.name} has exited the auction.")
+                    self.exited.add(player)
+                    self.advance_turn()
+                else:
+                    bid = int(bid)
+                    self.input_text = bid
 
             if not player.passed:
                 self.game.log_event(f"🚫 {player.name} cannot bid — they haven't passed GO yet.")

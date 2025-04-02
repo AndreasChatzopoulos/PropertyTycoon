@@ -149,6 +149,12 @@ class Bank:
             message = f"No houses available to sell on {selected_property.name}."
             print(message)
             return message
+        else:
+            group_properties = [prop for prop in selected_property.owner.owned_properties if prop.group == selected_property.group]
+            max_houses = max(prop.houses for prop in group_properties)
+            if selected_property.houses - 1 < max_houses - 1:
+                print(f"{selected_property.owner.name} is attempting to sell houses on {selected_property.name}, but the number of houses in the group must be symmetrical (difference of at most 1).")
+                return (f"{selected_property.owner.name} is attempting to sell houses on {selected_property.name}, but the number of houses in the group must be symmetrical (difference of at most 1).")
 
         num = 1  # 1 house at a time
         sale_value = (selected_property.house_cost // 2) * num
@@ -169,10 +175,10 @@ class Bank:
         """Allows the player to mortgage a property to raise funds"""
         if selected_property.mortgaged:
             print(f"{plr.name} tried to mortgage {selected_property.name} to the bank but it's already mortgaged.")
-            return
+            return (f"{plr.name} tried to mortgage {selected_property.name} to the bank but it's already mortgaged.")
         elif not selected_property.houses == 0:
             print(f"{plr.name} tried to mortgage {selected_property.name} but it already has houses built on it.")
-            return
+            return (f"{plr.name} tried to mortgage {selected_property.name} but it already has houses built on it.")
 
         selected_property.mortgaged = True
         mortgage_value = selected_property.price // 2
@@ -185,16 +191,18 @@ class Bank:
         mortgage_value = selected_property.price // 2
         if not selected_property.mortgaged:
             print(f"{plr.name} tried to unmortgage {selected_property.name} from the bank but it's not mortgaged.")
-            return
+            return (f"{plr.name} tried to unmortgage {selected_property.name} from the bank but it's not mortgaged.")
         elif plr.balance < mortgage_value:
             print(
                 f"{plr.name} tried to unmortgage {selected_property.name} from the bank but he doesn't have the sufficient balance.")
-            return
+            return (
+                f"{plr.name} tried to unmortgage {selected_property.name} from the bank but he doesn't have the sufficient balance.")
 
         selected_property.mortgaged = False
         plr.balance -= mortgage_value
         self.balance += mortgage_value
         print(f"{plr.name} unmortgaged {selected_property.name} .")
+        return (f"{plr.name} unmortgaged {selected_property.name} .")
 
 
     def build(self, number_of_houses, selected_property, plr):  # MAYBE SHOULD BE IN PROPERTY
@@ -223,8 +231,8 @@ class Bank:
             selected_property.houses += number_of_houses
             plr.balance -= total_cost
             self.balance += total_cost
-            print(f"{selected_property.owner.name} built {number_of_houses} houses on {selected_property.name}")
-            return (f"{selected_property.owner.name} built {number_of_houses} houses on {selected_property.name}")
+            print(f"{selected_property.owner.name} built {number_of_houses} house(s) on {selected_property.name}")
+            return (f"{selected_property.owner.name} built {number_of_houses} house(s) on {selected_property.name}")
 
     def pay_player(self, player, amount):
         """Pays a player the specified amount."""

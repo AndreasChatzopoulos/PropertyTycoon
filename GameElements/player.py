@@ -178,7 +178,7 @@ class Player:
             message = f"❌ {self.name} doesn’t have enough money to pay £{amount_due} rent to {creditor.name}! Attempting to raise funds..."
             print(message)
             self.game.log_event(message)
-
+            # does not consider bot case - need to add bot_avoid_bankruptcy wherever there is avoid_bankruptcy calls
             self.avoid_bankruptcy(amount_due, creditor)
 
 
@@ -428,11 +428,6 @@ class Player:
         if self.identity == "Basic Bot" and self.balance >= 50:
             return "yes"
         return "no"
-    
-    def bot_avoid_bankruptcy(self, options, amount_due, creditor):
-        if self.identity == "Basic Bot":
-            option = options.index("Declare Bankruptcy") + 1
-        return option
     
     def bot_options(self):
         if self.identity == "Basic Bot":

@@ -56,6 +56,8 @@ class TokenSelectionScreen:
         self.name_input_rect = pygame.Rect(self.width // 2 - 100, 250, 200, 40)
         for i in range(1, self.human_players + 1):
             self.player_names[i] = f"Player {i}"
+        for i in range(self.human_players + 1, self.total_players + 1):
+            self.player_names[i] = f"AI Player {i}"
 
 
     def load_token_images(self):

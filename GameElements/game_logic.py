@@ -71,6 +71,13 @@ class Game:
         else:
             self.handle_property(player)
 
+        # AI manages properties - build 1 house per property whenever it can
+        if player.identity != 'Human':
+            for prop in player.owned_properties:
+                if prop.check_completion() and player.balance > 200: 
+                    msg = self.bank.build(1, prop, player)
+                    self.log_event(msg)
+
 
 
     def next_turn(self, player, die1, die2):
@@ -85,7 +92,6 @@ class Game:
 
     def handle_property(self, player):
         property_at_position = self.bank.properties.get(player.position, None)
-
         if property_at_position:
             if property_at_position.owner and property_at_position.owner != player:
                 last_roll = player.last_roll if hasattr(player, 'last_roll') else 0
@@ -102,19 +108,16 @@ class Game:
                         # Let bots decide automatically
                         purchase_result = self.prompt_property_purchase(player)
 
-                        if purchase_result == "bought":
-                            self.log_event(f" {player.name} purchased {property_at_position.name} for £{property_at_position.price}")
-                        elif purchase_result == "declined":
+                        if purchase_result == "declined":
+                            self.log_event(f"{player.name} can't afford {property_at_position.name}.")
                             eligible_bidders = self.get_eligible_auction_players()
                             if len(eligible_bidders) > 1:
                                 self.log_event(f"🏦 Property purchase declined. Starting auction for {property_at_position.name}")
-                                self.start_auction_popup = True
-                                self.auction_eligible_players = eligible_bidders
+                                self.start_auction(player)
                             else:
                                 self.log_event(" Not enough eligible bidders to start an auction. Property remains unowned.")
                     else:
                         self.log_event(f"🛍️ {player.name} can choose to buy {property_at_position.name} using the Buy button.")
-
 
 
     def eligible_to_buy(self, player):
@@ -134,10 +137,9 @@ class Game:
         if not player.passed:
             return f"{player.name} hasn't passed GO and can't buy {property_at_position.name}."
 
-        if player.balance < property_at_position.price:
-            return f"{player.name} can't afford {property_at_position.name}."
-
         if player.identity == "Human":
+            if player.balance < property_at_position.price:
+                return f"{player.name} can't afford {property_at_position.name}."
             player.buy_property(property_at_position)
             return "bought"
 
@@ -148,14 +150,7 @@ class Game:
                 player.buy_property(property_at_position)
                 return "bought"
             else:
-                eligible_bidders = self.get_eligible_auction_players()
-                if len(eligible_bidders) > 1:
-                    self.ui.start_auction_popup = True
-                    self.ui.game.auction_eligible_players = eligible_bidders
-                    return "declined"
-                else:
-                    self.log_event("❌ Not enough eligible bidders to start an auction. Property remains unowned.")
-                    return "declined"
+                return "declined"
 
 
     def start_auction(self, player):
