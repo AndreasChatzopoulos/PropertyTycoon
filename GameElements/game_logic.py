@@ -343,6 +343,50 @@ class Game:
 
     def get_eligible_auction_players(self):
         return [p for p in self.players if p.passed]
+    
+
+    def check_end_game(self): # Check if the there is only one player and bring the popup
+        active_players = [p for p in self.players]
+
+        if len(active_players) <= 1:
+            winner = active_players[0] if active_players else None
+            if hasattr(self, "ui") and self.ui:
+                self.ui.trigger_end_game_popup(winner.name)
+            self.running = False
+            
+    def determine_winner_abridged(self):
+        highest_networth = -1
+        winners = []
+
+        for p in self.players:
+            property_value = sum(prop.price for prop in p.owned_properties)
+            house_value = sum(prop.house_cost * prop.houses for prop in p.owned_properties)
+            networth = p.balance + property_value + house_value
+
+            if networth > highest_networth:
+                highest_networth = networth
+                winners = [p.name]
+            elif networth == highest_networth:
+                winners.append(p.name)
+
+        if hasattr(self, "ui") and self.ui:
+            self.ui.trigger_end_game_popup(winners)
+            self.running = False
+
+    def remove_player(self, player):
+        player.return_properties_to_bank()
+        if player in self.players:
+            self.players.remove(player)
+
+        if self.current_player_index >= len(self.players):
+            self.current_player_index = 0
+
+        self.ui.right_sidebar.log_event(f"{player.name} has been removed from the game.")
+        self.check_end_game()
+
+
+       
+
 
 
 

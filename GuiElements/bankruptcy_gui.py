@@ -8,8 +8,8 @@ class BankruptcyPopup:
         self.creditor = creditor
         self.visible = True
 
-        self.font = pygame.font.Font(None, 30) # Standard font
-        self.small_font = pygame.font.Font(None, 24) # Smaller font for mortgaged properties
+        self.font = pygame.font.Font(None, 30)
+        self.small_font = pygame.font.Font(None, 24) 
         self.selected_property = None
         self.property_rects = []
 

@@ -84,10 +84,12 @@ class DiceGUI:
 
     def handle_event(self, event):
         """Handle mouse click on the roll button."""
-        if event.type == pygame.MOUSEBUTTONDOWN:
-            x, y = event.pos
-            if self.dice_button.collidepoint(x, y) and not self.rolling:
-                self.start_roll_animation()
+        # if event.type == pygame.MOUSEBUTTONDOWN:
+        #     x, y = event.pos
+        #     if self.dice_button.collidepoint(x, y) and not self.rolling:
+        #         self.start_roll_animation()
+        pass
+        # no longer needed as dice rolling is handled programatically via end turn
 
     def start_roll_animation(self):
         """Begin the dice rolling animation sequence."""

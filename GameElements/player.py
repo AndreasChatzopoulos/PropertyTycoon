@@ -239,11 +239,6 @@ class Player:
 
 
     def declare_bankruptcy(self, creditor, debt):
-        """
-        Handle bankruptcy when the player can't raise enough funds.
-        Transfers assets and removes player from the game.
-        """
-
         print(f"{self.name} is bankrupt! Cannot pay £{debt} to {creditor.name if creditor else 'the Bank'}.")
 
         if creditor:
@@ -255,24 +250,17 @@ class Player:
         self.owned_properties.clear()
         self.balance = 0
 
-        self.game.players.remove(self)
-
-        if self.game.players and self in self.game.players:
-            index = self.game.players.index(self)
-            self.game.players.remove(self)
-            if self.game.current_player_index >= len(self.game.players):
-                self.game.current_player_index = 0
-            elif index < self.game.current_player_index:
-                self.game.current_player_index -= 1
-
-
-        message = f" {self.name} has gone bankrupt and is out of the game."
+        message = f"{self.name} has gone bankrupt and is out of the game."
         print(message)
         self.game.log_event(message)
+
+        # call remove instead 
+        self.game.remove_player(self)
 
         if hasattr(self.game.ui, "bankruptcy_popup") and self.game.ui.bankruptcy_popup:
             self.game.ui.bankruptcy_popup.visible = False
             self.game.ui.bankruptcy_popup = None
+
 
 
     def return_properties_to_bank(self):

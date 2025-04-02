@@ -86,20 +86,38 @@ class AuctionPopup:
     def handle_bid(self):
         try:
             player = self.current_player()
+
             if player.identity == "Human":
-                bid = int(self.input_text)
-            else:
-                bid = player.bot_bid(self.highest_bid, self.property)
-                if bid == "exit":
-                    self.game.log_event(f"🚫 {player.name} has exited the auction.")
+                bid_str = self.input_text.strip()
+
+                if bid_str.lower() == "exit":
+                    self.game.log_event(f"{player.name} has exited the auction.")
                     self.exited.add(player)
                     self.advance_turn()
-                else:
+                    self.input_text = ""
+                    return
+
+                bid = int(bid_str)
+
+            else:
+                bid = player.bot_bid(self.highest_bid, self.property)
+
+                if bid == "exit":
+                    self.game.log_event(f"{player.name} has exited the auction.")
+                    self.exited.add(player)
+                    self.advance_turn()
+                    return
+
+                try:
                     bid = int(bid)
-                    self.input_text = bid
+                except ValueError:
+                    self.game.log_event(f"{player.name} made an invalid bid.")
+                    self.exited.add(player)
+                    self.advance_turn()
+                    return
 
             if not player.passed:
-                self.game.log_event(f"🚫 {player.name} cannot bid — they haven't passed GO yet.")
+                self.game.log_event(f"{player.name} cannot bid — they haven't passed GO yet.")
                 self.input_text = ""
                 return
 
@@ -108,16 +126,17 @@ class AuctionPopup:
                 self.highest_bidder = player
                 self.input_text = ""
                 self.advance_turn()
-                self.game.log_event(f"💰 {player.name} bids £{bid} for {self.property.name}")
+                self.game.log_event(f"{player.name} bids £{bid} for {self.property.name}")
             else:
                 self.game.log_event(
-                    f"⚠️ Invalid bid by {player.name}. It must be higher than £{self.highest_bid} and within their balance (£{player.balance})."
+                    f"Invalid bid by {player.name}. It must be higher than £{self.highest_bid} and within their balance (£{player.balance})."
                 )
                 self.input_text = ""
 
         except ValueError:
-            self.game.log_event("❌ Invalid input. Please enter a valid number.")
+            self.game.log_event(" Invalid input. Please enter a valid number.")
             self.input_text = ""
+
 
     def advance_turn(self):
         active_players = [p for p in self.players if p not in self.exited and p.passed]

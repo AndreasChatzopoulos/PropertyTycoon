@@ -12,6 +12,7 @@ from GameElements.board_elements import BoardElementsGUI
 from GuiElements.dice_gui import DiceGUI
 from GuiElements.jail_popup_gui import JailPopup
 from GuiElements.auction_popup_gui import AuctionPopup
+from GuiElements.end_game_gui import EndGamePopup
 
 from GameElements.game_logic import Game
 
@@ -85,6 +86,11 @@ class PropertyTycoon:
         self.jail_popup = None
         self.auction_popup = None
         self.bankruptcy_popup = None
+        self.end_game_popup = None
+        self.leave_game_popup = None
+
+        # self.abridged_game_mode_over_triggered = False
+
 
     def roll_and_play_next_turn(self):
         self.dice.start_roll_animation()
@@ -134,7 +140,9 @@ class PropertyTycoon:
 
                 if remaining_time <= 0:
                     print("Game Over: Time is up!")
-                    self.running = False
+                    # self.abridged_game_mode_over_triggered = True
+                    self.game.determine_winner_abridged()
+                    # self.running = False
 
             if self.jail_popup:
                 self.jail_popup.draw()
@@ -144,7 +152,14 @@ class PropertyTycoon:
 
             if self.bankruptcy_popup:
                 self.bankruptcy_popup.draw()
- 
+
+            if self.end_game_popup:
+                self.end_game_popup.draw()
+
+            if self.leave_game_popup:
+                self.leave_game_popup.draw()
+
+
 
             pygame.display.flip()
 
@@ -180,6 +195,13 @@ class PropertyTycoon:
                     self.bankruptcy_popup.handle_event(event)
                     return
 
+                if self.end_game_popup:
+                    self.end_game_popup.handle_event(event)
+                    return
+            
+                if self.leave_game_popup and self.leave_game_popup.visible:
+                    self.leave_game_popup.handle_event(event)
+                    return
 
                 self.handle_board_events(event)
 
@@ -251,6 +273,14 @@ class PropertyTycoon:
             self.start_time = time.time()
 
         self.state = "board"
+
+        # first_player = self.game.players[0]
+        # first_player.balance = 0  # 💸 Force them to start with no money
+        # first_player.position = 4  # One step before Income Tax
+        # die1, die2 = 1, 0  # Move 1 space to land on tile 5
+        # self.game.play_turn(die1, die2)
+
+
 
     @staticmethod
     def load_players_from_file(filename="players.json"):
@@ -368,6 +398,9 @@ class PropertyTycoon:
         popup = BankruptcyPopup(self.screen, player, amount_due, creditor)
         self.bankruptcy_popup = popup
         return popup
+    
+    def trigger_end_game_popup(self, winner_name):
+        self.end_game_popup = EndGamePopup(self.screen, winner_name)
 
 
     def run(self):

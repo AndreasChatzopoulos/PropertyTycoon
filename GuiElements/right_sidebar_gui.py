@@ -1,5 +1,7 @@
 import pygame
 from property_tycoon import PropertyTycoon
+from GuiElements.leave_game_popup_gui import LeaveGamePopup
+
 
 class RightSidebar(PropertyTycoon):
     """
@@ -205,7 +207,11 @@ class RightSidebar(PropertyTycoon):
             elif self.save_game_button.collidepoint(x, y):
                 self.log_event("Game Saved")
             elif self.leave_game_button.collidepoint(x, y):
-                self.log_event("Left Game")  
+                self.log_event("Left Game")
+                leaving_player = self.game.players[self.game.current_player_index]
+                self.game.ui.leave_game_popup = LeaveGamePopup(self.screen, leaving_player, self.game.players, self.game)
+
+                self.game.check_end_game()
 
         elif event.type == pygame.MOUSEWHEEL:
             # Scroll the game events panel when hovered
