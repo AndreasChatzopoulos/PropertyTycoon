@@ -306,7 +306,13 @@ class PropertyTycoon:
             player.token_image = token_scaled  
 
 
-        self.board = BoardGUI(board_size=750, window_width=self.width, window_height=self.height)
+        self.board = BoardGUI(
+            csv_path="data/PropertyTycoonBoardData.csv",  # path to your loaded board config
+            board_size=750,
+            window_width=self.width,
+            window_height=self.height
+        )
+
         self.elements = BoardElementsGUI(self.screen)
 
         if self.pregame_screen.selected_mode == "Abridged" and self.pregame_screen.time_limit.isdigit():

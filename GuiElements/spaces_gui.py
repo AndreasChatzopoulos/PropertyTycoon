@@ -1,4 +1,5 @@
 import pygame
+import pandas as pd
 
 class SpacesGUI:
     """
@@ -26,7 +27,8 @@ class SpacesGUI:
         self.highlighted = False  # Mouse hover highlight state
 
         # Rent calculation (e.g., 10% of price)
-        self.rent = int(self.price * 0.1) if self.price else None
+        self.rent = int(self.price * 0.1) if isinstance(self.price, (int, float)) and not pd.isna(self.price) else None
+
 
         # Property color codes for drawing the color bar
         self.property_colors = {
