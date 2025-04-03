@@ -146,7 +146,7 @@ class AuctionPopup:
             return
 
         if len(active_players) == 0:
-            self.game.log_event(f"🏦 No one bid on {self.property.name}. Property remains unsold.")
+            self.game.log_event(f"No one bid on {self.property.name}. Property remains unsold.")
             self.visible = False
             return
 
@@ -173,10 +173,10 @@ class AuctionPopup:
             self.property.owner = winner
             winner.balance -= self.highest_bid
             winner.owned_properties.append(self.property)
-            self.game.log_event(f"🏦 {winner.name} won {self.property.name} for £{self.highest_bid}")
+            self.game.log_event(f"{winner.name} won {self.property.name} for £{self.highest_bid}")
         else:
             self.property.owner = None
-            self.game.log_event(f"❌ No one bid on {self.property.name}. It remains unowned.")
+            self.game.log_event(f"No one bid on {self.property.name}. It remains unowned.")
 
         self.visible = False
         self.input_text = ""

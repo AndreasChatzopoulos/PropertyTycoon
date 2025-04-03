@@ -6,9 +6,9 @@
             "identity": "Human"
         },
         {
-            "name": "Player 2",
-            "token": "smartphone",
-            "identity": "Human"
+            "name": "AI Player 2",
+            "token": "hatstand",
+            "identity": "Basic Bot"
         }
     ]
 }

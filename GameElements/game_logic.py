@@ -27,7 +27,6 @@ class Game:
         player.move(die1, die2, (die1 == die2))
 
         self.handle_position(player)
-        #self.player_options(player)
         if player.position == 11 and player.in_jail:
             player.consecutive_doubles = 0
 
@@ -73,7 +72,6 @@ class Game:
         else:
             self.handle_property(player)
 
-        # AI manages properties - build 1 house per property whenever it can
         if player.identity != 'Human':
             for prop in player.owned_properties:
                 if prop.check_completion() and player.balance > 200: 
@@ -104,7 +102,6 @@ class Game:
                 if not player.passed:
                     if player.identity != "Human":
                         self.log_event(f" {player.name} has not passed GO and is not eligible to buy {property_at_position.name}.")
-                    # For humans, no message here — handled via Buy button
                 else:
                     if player.identity != "Human":
                         # Let bots decide automatically
@@ -114,12 +111,12 @@ class Game:
                             self.log_event(f"{player.name} can't afford {property_at_position.name}.")
                             eligible_bidders = self.get_eligible_auction_players()
                             if len(eligible_bidders) > 1:
-                                self.log_event(f"🏦 Property purchase declined. Starting auction for {property_at_position.name}")
+                                self.log_event(f"Property purchase declined. Starting auction for {property_at_position.name}")
                                 self.start_auction(player)
                             else:
                                 self.log_event(" Not enough eligible bidders to start an auction. Property remains unowned.")
                     else:
-                        self.log_event(f"🛍️ {player.name} can choose to buy {property_at_position.name} using the Buy button.")
+                        self.log_event(f"{player.name} can choose to buy {property_at_position.name} using the Buy button.")
 
 
     def eligible_to_buy(self, player):
@@ -272,7 +269,7 @@ class Game:
         #     self.execute_trade(current_player, other_player, offer_properties, request_properties, offer_money,
         #                        request_money)
         # else:
-        #     print("❌ Trade declined.")
+        #     print(" Trade declined.")
         #     return
 
     def execute_trade(self, current_player, other_player, offer_properties, request_properties, offer_money,
@@ -282,13 +279,13 @@ class Game:
         # Transfer money
         if offer_money > 0:
             if current_player.balance < offer_money:
-                print("❌ Insufficient funds to complete the trade.")
+                print("Insufficient funds to complete the trade.")
                 return
             current_player.balance -= offer_money
             other_player.balance += offer_money
         if request_money > 0:
             if other_player.balance < request_money:
-                print("❌ Insufficient funds to complete the trade.")
+                print("Insufficient funds to complete the trade.")
                 return
             other_player.balance -= request_money
             current_player.balance += request_money
@@ -297,7 +294,7 @@ class Game:
         for prop in request_properties:
             prop.transfer_property(current_player)
 
-        print("✅ Trade completed successfully!") 
+        print("Trade completed successfully!") 
         return
 
     def select_other_player(self, current_player):
@@ -333,10 +330,10 @@ class Game:
             player.passed_go = True
             player.balance += 200
             self.bank.balance -= 200
-            print(f"🛤️ {player.name} passed GO and collected £200!")
+            print(f"{player.name} passed GO and collected £200!")
 
         player.position = new_position  
-        print(f"🚀 {player.name} moves to {new_position}")
+        print(f"{player.name} moves to {new_position}")
 
     def log_event(self, message):
         if self.ui and hasattr(self.ui, "right_sidebar"):
@@ -347,7 +344,7 @@ class Game:
         return [p for p in self.players if p.passed]
     
 
-    def check_end_game(self): # Check if the there is only one player and bring the popup
+    def check_end_game(self):
         active_players = [p for p in self.players]
 
         if len(active_players) <= 1:
@@ -378,7 +375,7 @@ class Game:
             winner_str = " & ".join(winners)
             self.log_event(f"Abridged mode ended in a draw! {winner_str} share the win with £{highest_networth} in assets each.")
 
-        return winner_str  # Return all winners as a string
+        return winner_str  
 
 
     def remove_player(self, player):

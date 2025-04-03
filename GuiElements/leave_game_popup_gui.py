@@ -6,7 +6,7 @@ class LeaveGamePopup:
         self.game = game
         self.leaver = leaver
         self.players = [p for p in players if p != leaver]
-        self.votes = {}  # {player: True/False}
+        self.votes = {}  
         self.visible = True
         self.current_voter_index = 0
 
@@ -29,7 +29,6 @@ class LeaveGamePopup:
         self.screen.blit(header, (self.popup_rect.centerx - header.get_width() // 2, self.popup_rect.y + 30))
         self.screen.blit(voter, (self.popup_rect.centerx - voter.get_width() // 2, self.popup_rect.y + 80))
 
-        # --- Hover effect logic ---
         mouse_pos = pygame.mouse.get_pos()
         yes_hover = self.yes_button.collidepoint(mouse_pos)
         no_hover = self.no_button.collidepoint(mouse_pos)

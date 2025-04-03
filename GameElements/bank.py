@@ -50,10 +50,10 @@ class Bank:
         """Auction should only start if at least 1 other player has passed go"""
         #count number of players who have player.passed = True
         if [player.passed for player in players].count(True) <= 1:        
-            print("❌ Auction cannot start because no other player has passed GO.")
+            print("Auction cannot start because no other player has passed GO.")
             return
 
-        print(f"🏦 Auctioning {auction_property.name}!")
+        print(f"Auctioning {auction_property.name}!")
 
         highest_bidder = None
         active_bidders = [p for p in players if p.balance >= 0 and p.passed]
@@ -71,14 +71,14 @@ class Bank:
                 return True
             try:
                 if int(bid) > player.balance:
-                    print("❌ You can't bid more than your balance!")
+                    print("You can't bid more than your balance!")
                     return False
                 elif int(bid) <= highest_bid:
-                    print("❌ You must bid higher than the current highest bid!")
+                    print("You must bid higher than the current highest bid!")
                     return False
                 return True
             except ValueError:
-                print("❌ Invalid input, try again.")
+                print("Invalid input, try again.")
                 return False
             
         bidding_queue = deque(active_bidders)
@@ -90,7 +90,7 @@ class Bank:
             print(f"{player.name}'s current balance: £{player.balance}")
 
             if highest_bid > player.balance:
-                print(f"❌ {player.name} only has £{player.balance} and the current highest bid is £{highest_bid}.")
+                print(f"{player.name} only has £{player.balance} and the current highest bid is £{highest_bid}.")
                 continue
             
             if player.identity == "Human":
@@ -109,7 +109,7 @@ class Bank:
                     bid = "exit"
 
             if bid == 'exit':
-                print(f"❌ {player.name} has exited the auction.")
+                print(f"{player.name} has exited the auction.")
                 continue
 
             highest_bid = int(bid)
@@ -162,7 +162,7 @@ class Bank:
         selected_property.houses -= num
         plr.balance += sale_value
 
-        message = f"🔨 {plr.name} sold {num} house(s) from {selected_property.name} for £{sale_value}."
+        message = f"{plr.name} sold {num} house(s) from {selected_property.name} for £{sale_value}."
         print(message)
         if hasattr(plr.game, "log_event"):
             plr.game.log_event(message)
@@ -239,9 +239,9 @@ class Bank:
         if self.balance >= amount:
             self.balance -= amount
             player.balance += amount
-            print(f"💰 {player.name} received £{amount}.")
+            print(f"{player.name} received £{amount}.")
         else:
-            print(f"❌ {self.name} doesn’t have enough money to pay £{amount}! Selling assets...")
+            print(f"{self.name} doesn’t have enough money to pay £{amount}! Selling assets...")
             self.avoid_bankruptcy(amount, player)
 
     def receive_payment(self, player, amount):
@@ -249,7 +249,7 @@ class Bank:
         if player.balance >= amount:
             self.balance += amount
             player.balance -= amount
-            print(f"💰 {player.name} paid £{amount}.")
+            print(f"{player.name} paid £{amount}.")
         else:
-            print(f"❌ {player.name} doesn’t have enough money to pay £{amount}! Selling assets...")
+            print(f"{player.name} doesn’t have enough money to pay £{amount}! Selling assets...")
             player.avoid_bankruptcy(amount, self)

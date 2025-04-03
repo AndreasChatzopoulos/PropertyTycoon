@@ -150,7 +150,7 @@ class BankruptcyPopup:
             color = self.colors["button_pay_hover"] if is_hovered else self.colors["button_pay_default"]
             pygame.draw.rect(self.screen, color, pay_rect)
             pygame.draw.rect(self.screen, self.colors["border"], pay_rect, 2)
-            label = button_font.render("✅ Pay & Continue", True, self.colors["text_light"])
+            label = button_font.render("Pay & Continue", True, self.colors["text_light"])
             label_rect = label.get_rect(center=pay_rect.center)
             self.screen.blit(label, label_rect)
 
@@ -216,29 +216,29 @@ class BankruptcyPopup:
 
         if key == "mortgage" and prop:
             if prop.mortgaged:
-                log_event(f"ℹ️ {prop.name} is already mortgaged.")
+                log_event(f"{prop.name} is already mortgaged.")
                 return
             if hasattr(prop, 'houses') and prop.houses > 0:
-                 log_event(f"❌ Cannot mortgage {prop.name}. Sell houses first.")
+                 log_event(f"Cannot mortgage {prop.name}. Sell houses first.")
                  return
             game.bank.mortgage_property(self.player, prop)
 
         elif key == "sell_house" and prop:
             if not hasattr(prop, 'houses') or prop.houses == 0:
-                log_event(f"ℹ️ No houses to sell on {prop.name}.")
+                log_event(f"No houses to sell on {prop.name}.")
                 return
             game.bank.sell_houses_to_the_bank(self.player, prop)
 
         elif key == "sell_property" and prop:
             if hasattr(prop, 'houses') and prop.houses > 0:
-                log_event(f"❌ Cannot sell {prop.name} — sell houses first.")
+                log_event(f"Cannot sell {prop.name} — sell houses first.")
                 return
             game.bank.sell_property_to_the_bank(self.player, prop)
             self.selected_property = None
 
         elif key == "pay":
             if self.player.balance < self.amount_due:
-                log_event(f"❌ {self.player.name} attempted to pay but doesn't have enough funds.")
+                log_event(f"{self.player.name} attempted to pay but doesn't have enough funds.")
                 return
 
             self.player.balance -= self.amount_due
@@ -248,19 +248,19 @@ class BankruptcyPopup:
                      self.creditor.balance += self.amount_due
                      debt_paid_to = self.creditor.name if hasattr(self.creditor, 'name') else 'Creditor'
                 else:
-                    log_event(f"⚠️ Creditor object invalid or missing 'balance' attribute.")
+                    log_event(f"Creditor object invalid or missing 'balance' attribute.")
 
 
-            log_event(f"✅ {self.player.name} paid £{self.amount_due} to {debt_paid_to}.")
+            log_event(f"{self.player.name} paid £{self.amount_due} to {debt_paid_to}.")
             self.visible = False
             if ui: ui.bankruptcy_popup = None
 
         elif key == "declare_bankruptcy":
             if self.player not in game.players:
-                log_event(f"ℹ️ {self.player.name} is already out of the game.")
+                log_event(f"{self.player.name} is already out of the game.")
                 return
 
-            log_event(f"☠️ {self.player.name} declared bankruptcy and is removed from the game.")
+            log_event(f"{self.player.name} declared bankruptcy and is removed from the game.")
             self.player.declare_bankruptcy(self.creditor, self.amount_due)
             self.visible = False
             if ui: ui.bankruptcy_popup = None

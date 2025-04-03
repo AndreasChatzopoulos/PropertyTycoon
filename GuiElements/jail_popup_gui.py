@@ -89,19 +89,19 @@ class JailPopup:
                 game.fines += 50
                 player.jail_turns = 0
                 player.in_jail = False
-                player.skip_turn = True  # <-- new flag to skip this turn
-                game.log_event(f"💸 {player.name} paid £50 to get out of jail. They will resume next turn.")
+                player.skip_turn = True  
+                game.log_event(f"{player.name} paid £50 to get out of jail. They will resume next turn.")
                 self.visible = False
 
             else:
-                game.log_event(f" {player.name} doesn't have enough money to pay.")
+                game.log_event(f"{player.name} doesn't have enough money to pay.")
 
         elif choice == "card":
             if player.get_out_of_jail_cards > 0:
                 player.get_out_of_jail_cards -= 1
                 player.jail_turns = 0
                 player.in_jail = False
-                player.position = 11  # Just Visiting
+                player.position = 11  
                 if hasattr(game.cards, "return_jail_card_to_bottom"):
                     game.cards.return_jail_card_to_bottom()
                 game.log_event(f" {player.name} used a Get Out of Jail Free card.")

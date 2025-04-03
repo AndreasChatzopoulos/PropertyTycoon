@@ -64,7 +64,7 @@ class Property:
                 p.completed = True
             print(f" {new_owner.name} now owns the full {self.group} set!")
 
-        print(f"✅ {self.name} is now owned by {new_owner.name}.")
+        print(f"{self.name} is now owned by {new_owner.name}.")
 
     def check_completion(self):
         plr = self.owner

@@ -50,7 +50,7 @@ class TokenSelectionScreen:
         self.background = pygame.image.load("assets/background.png")
         self.background = pygame.transform.scale(self.background, (self.width, self.height))
 
-        self.player_names = {}  # Track player number → name
+        self.player_names = {}  
         self.name_input_active = False
         self.name_input_text = ""
         self.name_input_rect = pygame.Rect(self.width // 2 - 100, 250, 200, 40)
@@ -260,7 +260,6 @@ class TokenSelectionScreen:
         mouse_x, mouse_y = pygame.mouse.get_pos()
         is_hovered = button_rect.collidepoint(mouse_x, mouse_y)
 
-        # Lighten color on hover
         hover_color = (255, 100, 100) if is_hovered else color
 
         pygame.draw.rect(self.screen, hover_color, button_rect, border_radius=10)

@@ -134,7 +134,6 @@ class Player:
             self.game.log_event(f"{self.name} used a Get Out of Jail Free card to leave jail.")
             return
 
-        # Only allow bots to auto-decide here — human decisions are made via GUI popup
         if self.identity != "Human":
             if self.balance >= 50:
                 self.balance -= 50
@@ -162,7 +161,6 @@ class Player:
         """Handles rent payment when landing on an owned property."""
         creditor = property_at_position.owner
 
-        # If the owner is in jail, they can't collect rent
         if creditor.in_jail:
             message = f"{creditor.name} is in jail and cannot collect rent from {self.name}."
             print(message)
@@ -180,15 +178,14 @@ class Player:
             self.game.log_event(message)
 
         else:
-            message = f"❌ {self.name} doesn’t have enough money to pay £{amount_due} rent to {creditor.name}! Attempting to raise funds..."
+            message = f"{self.name} doesn’t have enough money to pay £{amount_due} rent to {creditor.name}! Attempting to raise funds..."
             print(message)
             self.game.log_event(message)
-            # does not consider bot case - need to add bot_avoid_bankruptcy wherever there is avoid_bankruptcy calls
             self.avoid_bankruptcy(amount_due, creditor)
 
 
 
-    def select_property(self, action):  # Method so the user selects property to sell
+    def select_property(self, action):  
         """
         Helper method to let the user select one of their owned properties.
         """
@@ -197,7 +194,7 @@ class Player:
             return None
 
         print(f" {self.name}'s Owned Properties:")
-        for idx, prop in enumerate(self.owned_properties, start=1):  # Traverses through the properties
+        for idx, prop in enumerate(self.owned_properties, start=1):  
             print(f"{idx}. {prop.name} | Price: £{prop.price} | Houses: {prop.houses} | Mortgaged: {prop.mortgaged}")
 
         while True:
@@ -239,7 +236,6 @@ class Player:
                 self.declare_bankruptcy(creditor, amount_due)
             return
 
-        # HUMAN: Open BankruptcyPopup (handled by UI)
         self.game.ui.bankruptcy_popup = self.game.ui.create_bankruptcy_popup(self, amount_due, creditor)
 
 
@@ -259,7 +255,6 @@ class Player:
         print(message)
         self.game.log_event(message)
 
-        # call remove instead 
         self.game.remove_player(self)
 
         if hasattr(self.game.ui, "bankruptcy_popup") and self.game.ui.bankruptcy_popup:
@@ -274,7 +269,7 @@ class Player:
             prop.owner = None  
 
 
-    def manage_property(self):
+    def manage_property(self): # pretty sure we can delete this 
         """
         Allows the player to select one of their owned properties and manage it.
         Available actions:
@@ -285,7 +280,7 @@ class Player:
         - Build houses
         """
         if not self.owned_properties:
-            print(f"❌ {self.name} has no properties to manage.")
+            print(f"{self.name} has no properties to manage.")
             return
 
         # Let the player select a property
@@ -294,8 +289,8 @@ class Player:
             return
 
         while True:
-            print(f"\n🏠 Managing {selected_property.name}:")
-            print("💰 Balance:", self.balance)
+            print(f"\n Managing {selected_property.name}:")
+            print("Balance:", self.balance)
 
             # Dynamically generate available options
             options = {}
@@ -326,15 +321,15 @@ class Player:
             try:
                 choice = int(input("Enter the number of your choice: "))
                 if choice not in options and choice != option_number:
-                    print("❌ Invalid choice. Try again.")
+                    print("Invalid choice. Try again.")
                     continue
             except ValueError:
-                print("❌ Please enter a valid number.")
+                print("Please enter a valid number.")
                 continue
 
             # Execute the chosen option
             if choice == option_number:  # Exit
-                print("🏠 Exiting property management.")
+                print("Exiting property management.")
                 return
             else:
                 if options[choice] == "Sell the property to the bank":
@@ -363,14 +358,14 @@ class Player:
         if new_position < self.position:
             self.balance += 200
             self.passed = True
-            message = f"🛤️ {self.name} passes GO and collects £200!"
+            message = f"{self.name} passes GO and collects £200!"
             print(message)
             self.game.log_event(message)
 
         self.position = new_position
 
         if self.position != 1:
-            message = f"🚀 {self.name} moves to {tile_name}."
+            message = f"{self.name} moves to {tile_name}."
             print(message)
             self.game.log_event(message)
 

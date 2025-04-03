@@ -23,14 +23,12 @@ class SpacesGUI:
         self.color = color
         self.orientation = orientation
         self.price = price
-        self.owner = "Unowned"  # Can be changed when purchased
-        self.highlighted = False  # Mouse hover highlight state
+        self.owner = "Unowned"  
+        self.highlighted = False  
 
-        # Rent calculation (e.g., 10% of price)
         self.rent = int(self.price * 0.1) if isinstance(self.price, (int, float)) and not pd.isna(self.price) else None
 
 
-        # Property color codes for drawing the color bar
         self.property_colors = {
             "Brown": (139, 69, 19), "Blue": (135, 206, 250), "Purple": (128, 0, 128),
             "Orange": (255, 165, 0), "Red": (255, 0, 0), "Yellow": (255, 255, 0),
@@ -50,7 +48,6 @@ class SpacesGUI:
         pygame.draw.rect(screen, (255, 255, 255), self.rect)
         pygame.draw.rect(screen, (0, 0, 0), self.rect, 2)
 
-        # Draw the color bar based on orientation
         color_bar_size = self.rect.height // 7
         if self.color and self.color in self.property_colors:
             color_value = self.property_colors[self.color]
@@ -63,12 +60,11 @@ class SpacesGUI:
             elif self.orientation == "right":
                 pygame.draw.rect(screen, color_value, (self.rect.x, self.rect.y, color_bar_size, self.rect.height))
 
-        # Draw the name, split across lines if needed
         font_size = int(self.rect.height * 0.22)
         font = pygame.font.Font(None, font_size)
 
         words = self.name.split()
-        line1, line2, line3 = (words + ["", ""])[:3]  # Pad if fewer than 3 words
+        line1, line2, line3 = (words + ["", ""])[:3] 
 
         text_surface1 = font.render(line1, True, (0, 0, 0))
         text_surface2 = font.render(line2, True, (0, 0, 0))
@@ -83,7 +79,6 @@ class SpacesGUI:
         if text_surface3:
             screen.blit(text_surface3, text_rect3)
 
-        # Draw highlight border if hovered
         if self.highlighted:
             pygame.draw.rect(screen, (255, 255, 0), self.rect, 4)
 
@@ -111,22 +106,18 @@ class SpacesGUI:
             popup_x = dice_button_x + (dice_button_width // 2) - (popup_width // 2)
             popup_y = dice_button_y - popup_height - 10
 
-            # Keep popup within screen bounds
             popup_x = max(10, min(popup_x, screen.get_width() - popup_width - 10))
 
-            # Popup background
             popup_rect = pygame.Rect(popup_x, popup_y, popup_width, popup_height)
             pygame.draw.rect(screen, (240, 240, 240), popup_rect, border_radius=10)
             pygame.draw.rect(screen, (0, 0, 0), popup_rect, 2)
 
-            # Info lines
             font = pygame.font.Font(None, 28)
             text_name = font.render(self.name, True, (0, 0, 0))
-            text_price = font.render(f"💰 Price: ${self.price}", True, (0, 0, 0))
-            text_rent = font.render(f"💵 Rent: ${rent}", True, (0, 0, 0)) if self.rent else None
-            text_owner = font.render(f"👤 Owner: {owner}", True, (0, 0, 0))
+            text_price = font.render(f"Price: ${self.price}", True, (0, 0, 0))
+            text_rent = font.render(f"Rent: ${rent}", True, (0, 0, 0)) if self.rent else None
+            text_owner = font.render(f"Owner: {owner}", True, (0, 0, 0))
 
-            # Render lines
             screen.blit(text_name, (popup_x + 10, popup_y + 10))
             screen.blit(text_price, (popup_x + 10, popup_y + 40))
             if text_rent:

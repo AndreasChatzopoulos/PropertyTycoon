@@ -11,12 +11,12 @@ class Card:
     def execute(self, player, game):
         """Executes the action associated with the card."""
         initial_position = player.position
-        message = f"🃏 {player.name} drew a card: {self.description}"
+        message = f"{player.name} drew a card: {self.description}"
         print(message)
         game.log_event(message)
         self.action(player, game)  # Apply the card effect
         if player.position != initial_position:
-            print(f"🎲 {player.name} moved to position {player.position}.")
+            print(f"{player.name} moved to position {player.position}.")
             game.handle_position(player)  # Handle the new position
 
     
@@ -32,7 +32,7 @@ class CardDeck:
     def draw_card(self, player, game):
         """Draws a card, executes its action, and places it at the bottom."""
         if not self.cards:
-            print("❌ No cards left in the deck.")
+            print("No cards left in the deck.")
             return None
 
         card = self.cards.pop(0)  # FIFO removal
@@ -109,4 +109,4 @@ class Cards:
             self.pot_luck_deck.cards.append(card)
         elif deck == "opportunity_knocks":
             self.opportunity_knocks_deck.cards.append(card)
-        print(f"🔁 'Get Out of Jail Free' card returned to {deck.replace('_', ' ').title()} deck.")
+        print(f"'Get Out of Jail Free' card returned to {deck.replace('_', ' ').title()} deck.")

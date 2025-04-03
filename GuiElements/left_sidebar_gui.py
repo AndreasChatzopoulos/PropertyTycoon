@@ -24,7 +24,7 @@ class LeftSidebar(PropertyTycoon):
         """
         self.screen = screen
         self.width, self.height = screen.get_size()
-        self.just_scrolled = False  # Used to prevent mis-clicks after scrolling
+        self.just_scrolled = False  
 
         self.sidebar_width = 200
         self.sidebar_rect = pygame.Rect(0, 0, self.sidebar_width, self.height)
@@ -56,7 +56,7 @@ class LeftSidebar(PropertyTycoon):
             "sell_property": pygame.Rect(0, 0, self.sidebar_width - 20, 30),
         }
 
-        self.log_event = event_logger if event_logger else print  # Logger fallback
+        self.log_event = event_logger if event_logger else print  
 
     def draw(self):
         """Draw the entire left sidebar and its components."""
@@ -213,7 +213,7 @@ class LeftSidebar(PropertyTycoon):
                         else:
                             self.log_event(f"{key.replace('_', ' ').title()} clicked (no property selected)")
 
-            self.just_scrolled = False  # Reset flag
+            self.just_scrolled = False 
 
         elif event.type == pygame.MOUSEWHEEL and self.active_popup == "manage_properties":
             self.scroll_offset -= event.y

@@ -4,7 +4,6 @@ import time
 import json
 import os
 
-# Import all GUI components for different parts of the game
 from GuiElements.board_gui import BoardGUI
 from GuiElements.pregame_screen_gui import PreGameScreen
 from GuiElements.token_selection_gui import TokenSelectionScreen
@@ -29,14 +28,14 @@ class PropertyTycoon:
         pygame.init()
         pygame.mixer.init()
 
-        # 🎵 Background Music
+        # Background Music
         try:
             pygame.mixer.music.load("assets/game_theme.mp3")
             pygame.mixer.music.set_volume(0.5)
             pygame.mixer.music.play(-1)
-            print("🎶 Background music playing...")
+            print("Background music playing...")
         except pygame.error as e:
-            print(f"⚠️ Error loading background music: {e}")
+            print(f"Error loading background music: {e}")
 
         try:
             self.jail_sound = pygame.mixer.Sound("assets/jail_sound.wav")
@@ -55,7 +54,7 @@ class PropertyTycoon:
         self.clock = pygame.time.Clock()
 
         # Game state
-        self.state = "pregame"  # Options: pregame, token_selection, board
+        self.state = "pregame" 
         self.running = True
 
         # UI Components
@@ -135,7 +134,6 @@ class PropertyTycoon:
             self.left_sidebar.draw()
             self.right_sidebar.draw()
 
-            # Hide dice when trade menu is visible
             if not self.right_sidebar.show_trade_menu:
                 self.dice.draw()
 
@@ -163,7 +161,7 @@ class PropertyTycoon:
                 if remaining_time <= 0 and not hasattr(self, 'abridged_mode_active'):
                     self.abridged_mode_active = True
                     self.turns_target = max(p.turns_taken for p in self.game.players)
-                    self.right_sidebar.log_event("⏱️ Time is up! Everyone will finish this round before the winner is determined.")
+                    self.right_sidebar.log_event("Time is up! Everyone will finish this round before the winner is determined.")
 
 
             if self.jail_popup:
@@ -340,7 +338,7 @@ class PropertyTycoon:
         filepath = os.path.join(os.path.dirname(__file__), filename)
 
         if not os.path.exists(filepath):
-            print("❌ Player file not found! Starting with default players.")
+            print("Player file not found! Starting with default players.")
             return ["Alice", "Bob"], ["Boot", "Ship"], ["Human", "Human"]
 
         with open(filepath, "r") as f:
@@ -353,7 +351,7 @@ class PropertyTycoon:
     def save_players_to_json(self, player_data, filename="players.json"):
         with open(filename, "w") as f:
             json.dump({"players": player_data}, f, indent=4)
-        print("✅ Player data saved to players.json")
+        print("Player data saved to players.json")
 
 
     def draw_tokens_on_board(self):

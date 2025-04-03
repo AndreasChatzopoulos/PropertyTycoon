@@ -19,11 +19,11 @@ class PreGameScreen:
         self.screen = screen
         self.width, self.height = screen.get_size()
 
-        # 🎨 Load and scale background image to fill the screen
+        # Load and scale background image to fill the screen
         self.background = pygame.image.load("assets/background.png")
         self.background = pygame.transform.scale(self.background, (self.width, self.height))
 
-        # 🖋️ Fonts for general and button text
+        # Fonts for general and button text
         self.font = pygame.font.Font(None, 38)
         self.button_font = pygame.font.Font(None, 32)
 
@@ -34,7 +34,7 @@ class PreGameScreen:
         self.num_ai_players = 0
         self.max_players = 5  # Combined human + AI
 
-        # 🎵 Load button click sound
+        # Load button click sound
         pygame.mixer.init()
         self.click_sound = pygame.mixer.Sound("assets/click.wav")
 
