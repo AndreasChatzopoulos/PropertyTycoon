@@ -32,7 +32,7 @@ class SpacesGUI:
         self.property_colors = {
             "Brown": (139, 69, 19), "Blue": (135, 206, 250), "Purple": (128, 0, 128),
             "Orange": (255, 165, 0), "Red": (255, 0, 0), "Yellow": (255, 255, 0),
-            "Green": (0, 255, 0), "Dark Blue": (0, 0, 139),
+            "Green": (0, 255, 0), "Deep blue": (0, 0, 139),
             "Station": (255, 255, 255), "Utilities": (255, 255, 255),
             "Take card": (255, 255, 255)
         }

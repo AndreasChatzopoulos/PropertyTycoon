@@ -2,12 +2,12 @@
     "players": [
         {
             "name": "Player 1",
-            "token": "iron",
+            "token": "smartphone",
             "identity": "Human"
         },
         {
             "name": "AI Player 2",
-            "token": "hatstand",
+            "token": "cat",
             "identity": "Basic Bot"
         }
     ]

@@ -37,8 +37,8 @@ class Bank:
             (33, "Ghengis Crescent", 300, [26, 130, 390, 900, 1100, 1275], 200, "Green"),
             (35, "Ibis Close", 320, [28, 150, 450, 1000, 1200, 1400], 200, "Green"),
             (36, "Portslade Station", 200, [25, 50, 100, 200], 0, "Station"),
-            (38, "James Webb Way", 350, [35, 175, 500, 1100, 1300, 1500], 200, "Dark Blue"),
-            (40, "Turing Heights", 400, [50, 200, 600, 1400, 1700, 2000], 200, "Dark Blue"),
+            (38, "James Webb Way", 350, [35, 175, 500, 1100, 1300, 1500], 200, "Deep blue"),
+            (40, "Turing Heights", 400, [50, 200, 600, 1400, 1700, 2000], 200, "Deep lbue"),
         ]
 
         for data in property_data:
