@@ -89,6 +89,11 @@ class PreGameScreen:
             text_rect = time_text.get_rect(midleft=(self.input_box.x + 10, self.input_box.centery))
             self.screen.blit(time_text, text_rect)
 
+            # Draw (Max: 180 mins) note
+            note_font = pygame.font.Font(None, 24)
+            note_text = note_font.render("(Max: 180 mins)", True, (220, 220, 220))
+            self.screen.blit(note_text, (self.input_box.right + 15, self.input_box.y + 10))
+
         # Player count controls
         human_text = self.font.render(f"Human Players: {self.num_human_players}", True, (255, 255, 255))
         self.screen.blit(human_text, (100, 300))
@@ -107,6 +112,7 @@ class PreGameScreen:
 
         pygame.display.flip()
 
+
     def handle_event(self, event):
         """
         Respond to mouse clicks and keyboard input.
@@ -123,6 +129,8 @@ class PreGameScreen:
             if self.normal_button_rect.collidepoint(x, y):
                 self.selected_mode = "Normal"
                 self.input_active = False
+                self.time_limit = ""
+
             elif self.abridged_button_rect.collidepoint(x, y):
                 self.selected_mode = "Abridged"
                 self.input_active = True
@@ -156,9 +164,12 @@ class PreGameScreen:
             elif event.key == pygame.K_BACKSPACE:
                 self.time_limit = self.time_limit[:-1]
             elif event.unicode.isdigit():
-                self.time_limit += event.unicode
+                combined = self.time_limit + event.unicode
+                if combined.isdigit() and int(combined) <= 180:
+                    self.time_limit = combined
 
         return None
+
 
     def check_start_condition(self):
         """
