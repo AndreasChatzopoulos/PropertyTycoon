@@ -49,7 +49,9 @@ class LeaveGamePopup:
         if not self.visible:
             return
 
-        if event.type == pygame.MOUSEBUTTONDOWN:
+        if self.current_voter().identity != 'Human':
+            self.vote(True)
+        elif event.type == pygame.MOUSEBUTTONDOWN:
             if self.yes_button.collidepoint(event.pos):
                 self.vote(True)
             elif self.no_button.collidepoint(event.pos):
