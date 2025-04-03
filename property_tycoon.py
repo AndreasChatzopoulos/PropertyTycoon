@@ -105,7 +105,7 @@ class PropertyTycoon:
         self.inactivity_popup = None
         self.elapsed_time_at_pause = None
 
-
+        self.last_input_time = time.time()
 
     def roll_and_play_next_turn(self):
         self.dice.start_roll_animation()
