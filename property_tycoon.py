@@ -102,7 +102,10 @@ class PropertyTycoon:
         self.end_game_popup = None
         self.leave_game_popup = None
 
-        # self.abridged_game_mode_over_triggered = False
+        self.paused = False
+        self.inactivity_popup = None
+        self.elapsed_time_at_pause = None
+
 
 
     def roll_and_play_next_turn(self):
@@ -138,10 +141,16 @@ class PropertyTycoon:
 
             self.draw_tokens_on_board()
 
-            # Handle timer countdown if abridged mode is active
             if self.time_limit_seconds:
-                elapsed_time = time.time() - self.start_time
+                if self.paused:
+                    elapsed_time = self.elapsed_time_at_pause  # Stay frozen
+                else:
+                    elapsed_time = time.time() - self.start_time
+
                 remaining_time = max(0, self.time_limit_seconds - elapsed_time)
+
+           
+
 
                 minutes = int(remaining_time // 60)
                 seconds = int(remaining_time % 60)
@@ -173,6 +182,15 @@ class PropertyTycoon:
                 self.leave_game_popup.draw()
 
 
+            if self.inactivity_popup:
+                font = pygame.font.Font(None, 36)
+                msg = font.render(self.inactivity_popup, True, (255, 255, 255))
+                msg_rect = msg.get_rect(center=(self.width // 2, self.height // 2))
+                pygame.draw.rect(self.screen, (0, 0, 0), msg_rect.inflate(20, 20))
+                pygame.draw.rect(self.screen, (255, 255, 255), msg_rect.inflate(20, 20), 2)
+                self.screen.blit(msg, msg_rect)
+
+
 
             pygame.display.flip()
 
@@ -181,6 +199,15 @@ class PropertyTycoon:
         Handle all input events like mouse clicks, movement, and key presses.
         """
         for event in pygame.event.get():
+            # Detect user interaction to reset inactivity timer
+            if event.type in (pygame.MOUSEBUTTONDOWN, pygame.MOUSEMOTION, pygame.KEYDOWN):
+                self.last_input_time = time.time()
+                if self.paused:
+                    self.paused = False
+                    self.inactivity_popup = None
+                    self.pause_start_time = None
+
+
             if event.type == pygame.QUIT:
                 self.running = False
 
@@ -198,12 +225,12 @@ class PropertyTycoon:
             elif self.state == "board":
                 if self.jail_popup and self.jail_popup.visible:
                     self.jail_popup.handle_event(event)
-                    return  
+                    return
 
                 if self.auction_popup and self.auction_popup.visible:
                     self.auction_popup.handle_event(event)
-                    return 
-                
+                    return
+
                 if self.bankruptcy_popup and self.bankruptcy_popup.visible:
                     self.bankruptcy_popup.handle_event(event)
                     return
@@ -211,7 +238,7 @@ class PropertyTycoon:
                 if self.end_game_popup:
                     self.end_game_popup.handle_event(event)
                     return
-            
+
                 if self.leave_game_popup and self.leave_game_popup.visible:
                     self.leave_game_popup.handle_event(event)
                     return
@@ -223,6 +250,7 @@ class PropertyTycoon:
 
                 self.left_sidebar.handle_event(event)
                 self.right_sidebar.handle_event(event)
+
 
 
     def start_token_selection(self):
@@ -286,6 +314,11 @@ class PropertyTycoon:
             self.start_time = time.time()
 
         self.state = "board"
+
+        self.last_input_time = time.time()  # Reset once players are loaded and UI is ready
+
+
+
 
         # first_player = self.game.players[0]
         # first_player.balance = 0  # 💸 Force them to start with no money
@@ -427,7 +460,20 @@ class PropertyTycoon:
             self.dice.update()
             self.draw()
 
+            if not self.paused and (time.time() - self.last_input_time >= 300):
+                self.paused = True
+                self.pause_start_time = time.time()
+                self.elapsed_time_at_pause = time.time() - self.start_time  # Freeze here
+                self.inactivity_popup = "Game paused due to 5 minutes of inactivity."
+
+
+
+
             if self.state == "board":
+                if self.paused:
+                    self.clock.tick(30)
+                    continue
+
                 player = self.game.players[self.game.current_player_index]
 
                 # Skip turn if flagged (after paying to leave jail)
