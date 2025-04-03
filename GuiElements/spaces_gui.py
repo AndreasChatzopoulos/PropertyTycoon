@@ -101,7 +101,7 @@ class SpacesGUI:
             dice_button_y: Y-coordinate of the dice button.
             dice_button_width: Width of the dice button.
         """
-        if self.highlighted and self.price:
+        if self.highlighted and self.is_property:
             popup_width, popup_height = 250, 140
             popup_x = dice_button_x + (dice_button_width // 2) - (popup_width // 2)
             popup_y = dice_button_y - popup_height - 10
@@ -123,3 +123,10 @@ class SpacesGUI:
             if text_rent:
                 screen.blit(text_rent, (popup_x + 10, popup_y + 65))
             screen.blit(text_owner, (popup_x + 10, popup_y + 90))
+
+     
+    @property
+    def is_property(self):
+        return isinstance(self.price, (int, float)) and not pd.isna(self.price)
+
+
