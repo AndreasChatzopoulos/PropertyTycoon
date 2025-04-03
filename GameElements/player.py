@@ -103,16 +103,18 @@ class Player:
         property_at_position.owner = self
         self.owned_properties.append(property_at_position)
 
-        message = f"✅ {self.name} bought {property_at_position.name} for £{property_at_position.price}!"
+        message = f"{self.name} bought {property_at_position.name} for £{property_at_position.price}!"
         print(message)
         self.game.log_event(message)
 
-    def go_to_jail(self):  
+    def go_to_jail(self):
         self.in_jail = True
         self.position = 11
-        message = f"{self.name} has been sent to jail!"
-        print(message)
-        self.game.log_event(message)
+        self.game.log_event(f"{self.name} has been sent to jail!")
+
+        if hasattr(self.game, "ui") and hasattr(self.game.ui, "jail_sound") and self.game.ui.jail_sound:
+            self.game.ui.jail_sound.play()
+
 
     def get_out_of_jail(self, double=False, turns=False):
         if double:

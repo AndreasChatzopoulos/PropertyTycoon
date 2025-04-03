@@ -38,6 +38,15 @@ class PropertyTycoon:
         except pygame.error as e:
             print(f"⚠️ Error loading background music: {e}")
 
+        try:
+            self.jail_sound = pygame.mixer.Sound("assets/jail_sound.wav")
+            self.win_sound = pygame.mixer.Sound("assets/win_sound.wav")
+        except pygame.error as e:
+            print(f"Failed to load sound: {e}")
+            self.jail_sound = None
+            self.win_sound = None
+
+
         # Screen and game state setup
         self.width = width
         self.height = height
@@ -402,9 +411,13 @@ class PropertyTycoon:
         popup = BankruptcyPopup(self.screen, player, amount_due, creditor)
         self.bankruptcy_popup = popup
         return popup
-    
+        
     def trigger_end_game_popup(self, winner_name):
         self.end_game_popup = EndGamePopup(self.screen, winner_name)
+
+        if self.win_sound:
+            self.win_sound.play()
+
 
 
     def run(self):
