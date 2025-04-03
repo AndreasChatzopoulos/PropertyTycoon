@@ -482,14 +482,14 @@ class PropertyTycoon:
 
                 # Skip turn if flagged (after paying to leave jail)
                 if getattr(player, "skip_turn", False):
-                    self.game.log_event(f"⏭️ {player.name} skips this turn after paying to leave jail.")
+                    self.game.log_event(f"{player.name} skips this turn after paying to leave jail.")
                     player.skip_turn = False
                     self.game.current_player_index = (self.game.current_player_index + 1) % len(self.game.players)
                     continue
 
                 # Skip turn if waiting in jail
                 if getattr(player, "turns_skipped", 0) > 0:
-                    self.game.log_event(f"⏭️ {player.name} is skipping turn ({3 - player.turns_skipped}/2) due to jail wait.")
+                    self.game.log_event(f"{player.name} is skipping turn ({3 - player.turns_skipped}/2) due to jail wait.")
                     player.turns_skipped -= 1
                     self.game.current_player_index = (self.game.current_player_index + 1) % len(self.game.players)
                     continue
@@ -507,7 +507,7 @@ class PropertyTycoon:
                     if is_double:
                         player.jail_turns = 0
                         player.in_jail = False
-                        self.game.log_event(f"🎲 {player.name} rolled a double ({die1}, {die2}) and escaped jail!")
+                        self.game.log_event(f"{player.name} rolled a double ({die1}, {die2}) and escaped jail!")
                         player.move(die1, die2, is_double)
                     else:
                         player.jail_turns += 1
@@ -516,7 +516,7 @@ class PropertyTycoon:
                         if player.jail_turns >= 3:
                             player.jail_turns = 0
                             player.in_jail = False
-                            self.game.log_event(f"⏳ {player.name} served 3 turns in jail and is now free.")
+                            self.game.log_event(f"{player.name} served 3 turns in jail and is now free.")
 
                     player.awaiting_jail_roll_result = False
 
@@ -547,11 +547,18 @@ class PropertyTycoon:
                     self.first_turn_pending = False
 
                 # Jail popup for human players
-                if player.in_jail and player.identity == "Human":
+                if player.in_jail and player.identity == "Human" and not getattr(player, "just_sent_to_jail", False):
                     if not self.jail_popup or self.jail_popup.player != player:
                         self.jail_popup = JailPopup(self.screen, player, self.game)
                 else:
                     self.jail_popup = None
+
+                # Delay reset until player turn moves
+                for p in self.game.players:
+                    if p != self.game.players[self.game.current_player_index] and getattr(p, "just_sent_to_jail", False):
+                        p.just_sent_to_jail = False
+
+
 
                 # Auction popup management
                 if self.auction_popup:

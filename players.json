@@ -6,9 +6,24 @@
             "identity": "Human"
         },
         {
-            "name": "AI Player 2",
+            "name": "Player 2",
+            "token": "iron",
+            "identity": "Human"
+        },
+        {
+            "name": "Player 3",
+            "token": "hatstand",
+            "identity": "Human"
+        },
+        {
+            "name": "Player 4",
             "token": "cat",
-            "identity": "Basic Bot"
+            "identity": "Human"
+        },
+        {
+            "name": "Player 5",
+            "token": "boot",
+            "identity": "Human"
         }
     ]
 }

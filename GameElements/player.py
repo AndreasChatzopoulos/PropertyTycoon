@@ -19,7 +19,8 @@ class Player:
         self.jail_turns = 0
         self.consecutive_doubles = 0
         self.turns_taken = 0
-        self.turns_skipped = 0  # used when waiting in jail
+        self.turns_skipped = 0  
+        self.just_sent_to_jail = False
 
 
     def roll_dice(self):
@@ -112,6 +113,7 @@ class Player:
     def go_to_jail(self):
         self.in_jail = True
         self.position = 11
+        self.just_sent_to_jail = True
         self.game.log_event(f"{self.name} has been sent to jail!")
 
         if hasattr(self.game, "ui") and hasattr(self.game.ui, "jail_sound") and self.game.ui.jail_sound:
