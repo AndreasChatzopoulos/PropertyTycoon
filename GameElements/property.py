@@ -1,8 +1,8 @@
 
 class Property:
     color_group_sizes = {  # Store it inside the class
-        "Brown": 2, "Light Blue": 3,"Station": 4, "Pink": 3, "Utilities": 2, "Orange": 3,
-        "Red": 3, "Yellow": 3, "Green": 3, "Dark Blue": 2
+        "Brown": 2, "Blue": 3,"Station": 4, "Pink": 3, "Utilities": 2, "Orange": 3,
+        "Red": 3, "Yellow": 3, "Green": 3, "Deep blue": 2
     }
 
     def __init__(self, position, name, price, rent, house_cost, group):
