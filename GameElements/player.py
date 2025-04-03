@@ -19,6 +19,8 @@ class Player:
         self.jail_turns = 0
         self.consecutive_doubles = 0
         self.turns_taken = 0
+        self.turns_skipped = 0  # used when waiting in jail
+
 
     def roll_dice(self):
         die1, die2 = random.randint(1, 6), random.randint(1, 6)

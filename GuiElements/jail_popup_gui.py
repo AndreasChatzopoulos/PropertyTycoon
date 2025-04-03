@@ -89,9 +89,10 @@ class JailPopup:
                 game.fines += 50
                 player.jail_turns = 0
                 player.in_jail = False
-                player.wants_to_roll_after_paying_jail = True  #  New flag
-                game.log_event(f"💸 {player.name} paid £50 to get out of jail.")
+                player.skip_turn = True  # <-- new flag to skip this turn
+                game.log_event(f"💸 {player.name} paid £50 to get out of jail. They will resume next turn.")
                 self.visible = False
+
             else:
                 game.log_event(f" {player.name} doesn't have enough money to pay.")
 
@@ -110,9 +111,11 @@ class JailPopup:
 
         elif choice == "wait":
             player.jail_turns += 1
-            game.log_event(f"{player.name} chose to wait in jail (Turn {player.jail_turns}/3).")
             if player.jail_turns >= 3:
                 player.jail_turns = 0
                 player.in_jail = False
                 game.log_event(f"{player.name} has served their sentence and is now Just Visiting.")
+            else:
+                player.turns_skipped = 2  
             self.visible = False
+

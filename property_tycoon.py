@@ -430,7 +430,21 @@ class PropertyTycoon:
             if self.state == "board":
                 player = self.game.players[self.game.current_player_index]
 
+                # Skip turn if flagged (after paying to leave jail)
+                if getattr(player, "skip_turn", False):
+                    self.game.log_event(f"⏭️ {player.name} skips this turn after paying to leave jail.")
+                    player.skip_turn = False
+                    self.game.current_player_index = (self.game.current_player_index + 1) % len(self.game.players)
+                    continue
 
+                # Skip turn if waiting in jail
+                if getattr(player, "turns_skipped", 0) > 0:
+                    self.game.log_event(f"⏭️ {player.name} is skipping turn ({3 - player.turns_skipped}/2) due to jail wait.")
+                    player.turns_skipped -= 1
+                    self.game.current_player_index = (self.game.current_player_index + 1) % len(self.game.players)
+                    continue
+
+                # Jail logic - rolling for doubles
                 if getattr(player, "wants_to_roll_in_jail", False) and not self.dice.rolling:
                     self.dice.start_roll_animation()
                     player.awaiting_jail_roll_result = True
@@ -456,6 +470,7 @@ class PropertyTycoon:
 
                     player.awaiting_jail_roll_result = False
 
+                # Deprecated - no longer using this flag (paying jail skips turn instead)
                 if getattr(player, "wants_to_roll_after_paying_jail", False) and not self.dice.rolling:
                     self.dice.start_roll_animation()
                     player.awaiting_post_jail_roll = True
@@ -468,6 +483,7 @@ class PropertyTycoon:
                     self.game.log_event(f"{player.name} moved {die1 + die2} steps after paying to get out of jail.")
                     player.awaiting_post_jail_roll = False
 
+                # First turn of game (rolling to start)
                 if self.waiting_for_dice and not self.dice.rolling:
                     self.pending_roll = self.dice.get_dice_result()
                     self.waiting_for_dice = False
@@ -480,13 +496,14 @@ class PropertyTycoon:
                     player.turns_taken += 1
                     self.first_turn_pending = False
 
-
+                # Jail popup for human players
                 if player.in_jail and player.identity == "Human":
                     if not self.jail_popup or self.jail_popup.player != player:
                         self.jail_popup = JailPopup(self.screen, player, self.game)
                 else:
                     self.jail_popup = None
 
+                # Auction popup management
                 if self.auction_popup:
                     if not self.auction_popup.visible:
                         self.auction_popup = None
@@ -499,13 +516,12 @@ class PropertyTycoon:
                     if hasattr(self.game, 'auction_eligible_players'):
                         del self.game.auction_eligible_players
 
-
+                # Abridged game mode end condition
                 if getattr(self, 'abridged_mode_active', False) and not getattr(self, 'abridged_mode_complete', False):
                     if all(p.turns_taken >= self.turns_target for p in self.game.players):
                         winner_name = self.game.determine_winner_abridged()
                         self.trigger_end_game_popup(winner_name)
                         self.abridged_mode_complete = True
-
 
             self.clock.tick(30)
 
