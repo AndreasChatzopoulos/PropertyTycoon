@@ -7,14 +7,50 @@ class PreGameScreen:
     - Set a time limit (for Abridged mode)
     - Select the number of human and AI players
     - Start the game when valid settings are chosen
+
+    Args:
+        screen (pygame.Surface): The Pygame screen surface to render the pre-game setup.
+
+    Attributes:
+        selected_mode (str): The selected game mode ("Normal" or "Abridged").
+        time_limit (str): The time limit in minutes for Abridged mode.
+        num_human_players (int): The number of human players.
+        num_ai_players (int): The number of AI players.
+        max_players (int): The maximum number of players (human + AI).
+        start_disabled (bool): Whether the start button is disabled based on player count.
+        input_active (bool): Flag for whether the time input box is active.
+        background (pygame.Surface): The background image for the pre-game screen.
+        font (pygame.font.Font): The font used for general text rendering.
+        button_font (pygame.font.Font): The font used for button text rendering.
+        click_sound (pygame.mixer.Sound): The sound played when a button is clicked.
+        start_button_rect (pygame.Rect): The rectangle for the "Start" button.
+        normal_button_rect (pygame.Rect): The rectangle for the "Normal" mode button.
+        abridged_button_rect (pygame.Rect): The rectangle for the "Abridged" mode button.
+        minus_human_button (pygame.Rect): The rectangle for the "Minus Human Players" button.
+        plus_human_button (pygame.Rect): The rectangle for the "Plus Human Players" button.
+        minus_ai_button (pygame.Rect): The rectangle for the "Minus AI Players" button.
+        plus_ai_button (pygame.Rect): The rectangle for the "Plus AI Players" button.
+        input_box (pygame.Rect): The rectangle for the time limit input box.
     """
+
 
     def __init__(self, screen):
         """
-        Initialize all UI elements and settings for the pre-game screen.
+        Initializes all UI elements and settings for the pre-game screen.
 
         Args:
-            screen: The Pygame display surface to draw the interface on.
+            screen (pygame.Surface): The Pygame display surface to draw the interface on.
+
+        Returns:
+            None
+
+        Raises:
+            None
+
+        Side Effects:
+            - Initializes game settings (mode, player count, etc.).
+            - Sets up the layout for buttons, text, and input fields.
+            - Loads background image and initializes sound effects.
         """
         self.screen = screen
         self.width, self.height = screen.get_size()
@@ -60,6 +96,19 @@ class PreGameScreen:
         - Player selection
         - Time limit input
         - Start button
+
+        Args:
+            None
+
+        Returns:
+            None
+
+        Raises:
+            None
+
+        Side Effects:
+            - Draws the pre-game UI components including buttons, input fields, and player counts.
+            - Renders the background and overlay.
         """
         self.screen.blit(self.background, (0, 0))
 
@@ -117,9 +166,19 @@ class PreGameScreen:
         """
         Respond to mouse clicks and keyboard input.
 
+        Args:
+            event (pygame.event): The Pygame event to handle (e.g., mouse click or keyboard input).
+
         Returns:
-            "start" if the Start button is clicked and valid.
-            None otherwise.
+            str: "start" if the Start button is clicked and valid; None otherwise.
+
+        Raises:
+            None
+
+        Side Effects:
+            - Updates selected game mode, number of players, and time limit based on user input.
+            - Enables or disables the "Start" button based on validation of selected settings.
+            - Activates or deactivates the time limit input box when needed.
         """
         if event.type == pygame.MOUSEBUTTONDOWN:
             x, y = event.pos
@@ -175,6 +234,18 @@ class PreGameScreen:
         """
         Validate that there are enough players to start the game.
         Enables or disables the Start button accordingly.
+
+        Args:
+            None
+
+        Returns:
+            None
+
+        Raises:
+            None
+
+        Side Effects:
+            - Disables the "Start" button if there are not enough players (at least 2 human players or 1 human and 1 AI player).
         """
         self.start_disabled = not (
             self.num_human_players >= 2 or
@@ -186,10 +257,21 @@ class PreGameScreen:
         Draws a button with hover effects and highlight state.
 
         Args:
-            button_rect: pygame.Rect defining button size/position.
-            text: Label displayed inside the button.
-            selected: Whether this button is actively selected.
-            disabled: Whether this button should be dimmed and non-interactive.
+            button_rect (pygame.Rect): The rectangle defining the button's size and position.
+            text (str): The label displayed inside the button.
+            selected (bool, optional): Whether this button is actively selected.
+            disabled (bool, optional): Whether this button is disabled (dimmed and non-interactive).
+
+        Returns:
+            None
+
+        Raises:
+            None
+
+        Side Effects:
+            - Draws the button with hover effects based on the mouse position.
+            - Highlights the button when hovered or selected.
+            - Updates the button's appearance based on its disabled or selected state.
         """
         mouse_x, mouse_y = pygame.mouse.get_pos()
         is_hovered = button_rect.collidepoint(mouse_x, mouse_y)

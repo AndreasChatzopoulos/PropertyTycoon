@@ -1,7 +1,44 @@
 import pygame
 
 class JailPopup:
+    """
+    Manages the Jail popup in the game, allowing players to interact with options while in jail.
+
+    This class is responsible for rendering the Jail popup window, displaying the available options 
+    for a player who is in jail. The player can choose to roll for doubles, pay £50 to get out of jail, 
+    use a "Get Out of Jail Free" card, or wait for their turn to skip.
+
+    Args:
+        screen (pygame.Surface): The Pygame surface where the popup will be drawn.
+        player (Player): The player who is in jail.
+        game (Game): The game instance that holds the game logic.
+
+    Attributes:
+        buttons (dict): Dictionary holding the positions and size of the buttons in the popup window.
+        font (pygame.font.Font): The font used to render text in the popup window.
+        hovered_button (str): Keeps track of which button is currently hovered over.
+        button_width (int): The width of the buttons in the popup.
+        button_height (int): The height of the buttons in the popup.
+        visible (bool): Boolean flag to show or hide the popup.
+    """   
     def __init__(self, screen, player, game):
+        """
+        Initializes the Jail popup with necessary parameters for rendering and interacting with the player.
+
+        Args:
+            screen (pygame.Surface): The Pygame surface where the popup will be drawn.
+            player (Player): The player who is in jail and needs to interact with the popup.
+            game (Game): The game instance containing the logic.
+
+        Returns:
+            None
+
+        Raises:
+            None
+
+        Side Effects:
+            Initializes the button positions, the font, and the visibility flag for the popup.
+        """
         self.screen = screen
         self.player = player
         self.game = game
@@ -21,6 +58,22 @@ class JailPopup:
         }
 
     def draw(self):
+        """
+        Draws the Jail popup on the screen with the available choices for the player in jail.
+
+        Args:
+            None
+
+        Returns:
+            None
+
+        Raises:
+            None
+
+        Side Effects:
+            Renders the popup window, including the title, available actions, and the buttons.
+            The visual appearance of the buttons and the title is dynamically updated.
+        """
         if not self.visible:
             return
 
@@ -53,6 +106,21 @@ class JailPopup:
 
             
     def update_hover(self, mouse_pos):
+        """
+        Updates the hovered button state based on the current mouse position.
+
+        Args:
+            mouse_pos (tuple): The current (x, y) position of the mouse cursor.
+
+        Returns:
+            None
+
+        Raises:
+            None
+
+        Side Effects:
+            Updates the `hovered_button` attribute, which highlights the button the user is hovering over.
+        """
         self.hovered_button = None
         for key, rect in self.buttons.items():
             if rect.collidepoint(mouse_pos):
@@ -60,6 +128,22 @@ class JailPopup:
                 break
 
     def handle_event(self, event):
+        """
+        Handles user input events, such as mouse clicks on the popup buttons.
+
+        Args:
+            event (pygame.event): The Pygame event to process (e.g., mouse movement or button click).
+
+        Returns:
+            None
+
+        Raises:
+            None
+
+        Side Effects:
+            If the player clicks on a button, it calls `handle_choice()` to process the selected option.
+            Closes the popup if a choice is made.
+        """
         if not self.visible:
             return
 
@@ -75,6 +159,25 @@ class JailPopup:
 
 
     def handle_choice(self, choice):
+        """
+        Handles the player's choice based on the selected option in the Jail popup.
+
+        Args:
+            choice (str): The option chosen by the player. Possible values are "roll", "pay", "card", or "wait".
+
+        Returns:
+            None
+
+        Raises:
+            None
+
+        Side Effects:
+            - If the player chooses "roll", it flags the player to roll the dice for doubles.
+            - If the player chooses "pay", it deducts £50 from the player's balance to get out of jail.
+            - If the player chooses "card", it uses a "Get Out of Jail Free" card if available.
+            - If the player chooses "wait", it increments the jail turn counter and either releases the player or skips their turn.
+            - Each option triggers a game log event and updates the player's state (in jail, balance, etc.).
+        """
         player = self.player
         game = self.game
 

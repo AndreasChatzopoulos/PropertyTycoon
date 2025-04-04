@@ -6,16 +6,44 @@ import math
 class DiceGUI:
     """
     Handles the dice rolling GUI, animation, sound effects, and double-roll tracking.
-    Displays a clickable roll button, dice images, and a double-roll history panel.
+
+    This class is responsible for displaying the dice roll button, animating the dice roll, 
+    and tracking consecutive double rolls. It also displays a clickable button to roll the dice,
+    updates the UI to show the result of the dice roll, and shows the history of recent double rolls.
+
+    Args:
+        screen (pygame.Surface): The Pygame surface where the dice elements will be drawn.
+
+    Attributes:
+        dice_button (pygame.Rect): The rectangular area for the dice roll button.
+        dice_images (list[pygame.Surface]): List of dice images for faces 1-6.
+        roll_sound (pygame.mixer.Sound): Sound effect to play when the dice is rolled.
+        dice_result (tuple): A tuple storing the result of the dice roll (die1, die2).
+        double_history (list): Stores recent double rolls only.
+        double_streak (int): Tracks the current streak of consecutive double rolls.
+        rolling (bool): A flag to indicate whether the dice rolling animation is in progress.
+        animation_start_time (float): The start time of the dice roll animation.
+        animation_duration (float): Duration of the dice roll animation.
+        last_animation_time (float): Last time the animation was updated.
+        dice_rotation_angle (float): The rotation angle of the dice during animation.
+        bounce_offset (int): The bounce offset for the dice during animation.
     """
 
     def __init__(self, screen):
         """
-        Initialize the DiceGUI.
+        Initializes the DiceGUI, setting up the necessary surfaces and sound effects.
 
-        Parameters:
-        - screen: Pygame surface where dice elements will be drawn.
-        - event_logger: Optional function to log game events (e.g., updates to a sidebar).
+        Args:
+            screen (pygame.Surface): The Pygame surface where dice elements will be drawn.
+
+        Returns:
+            None
+
+        Raises:
+            pygame.error: If there is an issue initializing the Pygame mixer or loading sound files.
+
+        Side Effects:
+            Initializes dice images, sounds, and sets up default dice result and animation settings.
         """
         self.screen = screen
         self.dice_button = pygame.Rect(screen.get_width() // 2 - 75, screen.get_height() // 2 - 30, 150, 60)
@@ -35,7 +63,23 @@ class DiceGUI:
         self.bounce_offset = 0
 
     def draw(self):
-        """Draw the dice button, dice faces, and the double roll history."""
+        """
+        Draws the dice roll button, dice faces, and double roll history on the screen.
+
+        Args:
+            screen (pygame.Surface): The Pygame surface where the dice and button are rendered.
+            prop_data (list): Property data used to display tooltips or dynamic information on the board.
+
+        Returns:
+            None
+
+        Raises:
+            None
+
+        Side Effects:
+            Renders the dice button, dice images, and the double roll history on the screen.
+            The appearance of dice changes depending on whether the dice are rolling or not.
+        """
         mouse_x, mouse_y = pygame.mouse.get_pos()
         hovered = self.dice_button.collidepoint(mouse_x, mouse_y)
 
@@ -83,7 +127,21 @@ class DiceGUI:
             self.screen.blit(txt, (history_rect.x + 10, history_rect.y + 30 + i * 20))
 
     def handle_event(self, event):
-        """Handle mouse click on the roll button."""
+        """
+        Handles user input events, specifically mouse clicks on the dice roll button.
+
+        Args:
+            event (pygame.event): The Pygame event to process.
+
+        Returns:
+            None
+
+        Raises:
+            None
+
+        Side Effects:
+            Starts the dice roll animation when the roll button is clicked by the player.
+        """
         # if event.type == pygame.MOUSEBUTTONDOWN:
         #     x, y = event.pos
         #     if self.dice_button.collidepoint(x, y) and not self.rolling:
@@ -92,7 +150,22 @@ class DiceGUI:
         # no longer needed as dice rolling is handled programatically via end turn
 
     def start_roll_animation(self):
-        """Begin the dice rolling animation sequence."""
+        """
+        Begins the dice rolling animation sequence, playing the roll sound and selecting a random dice result.
+
+        Args:
+            None
+
+        Returns:
+            None
+
+        Raises:
+            None
+
+        Side Effects:
+            Changes the `rolling` attribute to True, initiates the animation, and plays the roll sound.
+            Updates `dice_result` with a random value for the dice.
+        """
         self.rolling = True
         self.animation_start_time = time.time()
         self.last_animation_time = self.animation_start_time
@@ -102,7 +175,24 @@ class DiceGUI:
         self.dice_result = (random.randint(1, 6), random.randint(1, 6))
 
     def update(self):
-        """Update dice animation state and process final result."""
+        """
+        Updates the dice animation state, handling rotation, bouncing, and finalizing the roll result.
+
+        Args:
+            None
+
+        Returns:
+            None
+
+        Raises:
+            None
+
+        Side Effects:
+            Modifies the `dice_rotation_angle` and `bounce_offset` attributes to animate the dice.
+            If the animation is complete, updates the `rolling` attribute to False and stores the final dice result.
+            If the dice result is a double, increments the `double_streak` and adds the result to the `double_history`.
+            If it's not a double, resets the `double_streak` and clears the `double_history`.
+        """
         if self.rolling:
             now = time.time()
             elapsed = now - self.animation_start_time
@@ -131,5 +221,19 @@ class DiceGUI:
                     self.double_history.clear()  # Reset history on non-double roll
 
     def get_dice_result(self):
-        """Return the final dice result once rolling is done."""
+        """
+        Returns the final result of the dice roll once the rolling animation is completed.
+
+        Args:
+            None
+
+        Returns:
+            tuple: A tuple representing the final result of the dice roll, e.g., (3, 4).
+
+        Raises:
+            None
+
+        Side Effects:
+            None
+        """
         return self.dice_result

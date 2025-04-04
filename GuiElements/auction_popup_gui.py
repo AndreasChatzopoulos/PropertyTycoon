@@ -1,7 +1,55 @@
 import pygame
 
 class AuctionPopup:
+    """
+    Handles the interactive GUI-based property auction process during the game.
+
+    This popup appears when a player declines to purchase an unowned property. 
+    It allows all eligible players who have passed GO to participate in a live bidding session 
+    via a graphical interface powered by Pygame.
+
+    Attributes:
+        screen (pygame.Surface): The Pygame display surface for rendering the popup.
+        players (list): List of Player objects participating in the auction.
+        property (Property): The property being auctioned.
+        game (Game): Reference to the main game instance for logging and updates.
+        visible (bool): Whether the popup is currently being shown.
+        font (pygame.Font): Standard font used for rendering text.
+        title_font (pygame.Font): Larger font used for the auction title.
+        input_text (str): The current text in the bid input field.
+        active_player_index (int): Index of the player currently bidding.
+        highest_bid (int): The highest bid placed so far.
+        highest_bidder (Player): The player who placed the highest bid.
+        exited (set): Set of players who have exited the auction.
+        input_box (pygame.Rect): Rect defining the text input box for bids.
+        place_bid_button (pygame.Rect): Button rect for placing a bid.
+        exit_button (pygame.Rect): Button rect for exiting the auction.
+        hovered_button (str | None): Identifier of the button currently hovered (used for hover effects).
+    """
     def __init__(self, screen, players, property_obj, game):
+        """
+        Initializes the auction popup interface for property bidding.
+
+        Args:
+            screen (pygame.Surface): The display surface where the popup will be rendered.
+            players (list): A list of Player objects participating in the auction.
+            property_obj (Property): The property object currently up for auction.
+            game (Game): The main game instance managing state and event logging.
+
+        Attributes Initialized:
+            - visible (bool): Controls the visibility of the auction popup.
+            - font (pygame.Font): Font used for regular UI text.
+            - title_font (pygame.Font): Font used for the auction title.
+            - input_text (str): The current bid input by the player.
+            - active_player_index (int): Index of the currently active bidding player.
+            - highest_bid (int): The highest bid placed during the auction.
+            - highest_bidder (Player or None): The player who made the highest bid.
+            - exited (set): Set of players who have exited the auction.
+            - input_box (pygame.Rect): Rectangle for the bid input field.
+            - place_bid_button (pygame.Rect): Button rectangle for placing a bid.
+            - exit_button (pygame.Rect): Button rectangle for exiting the auction.
+            - hovered_button (str or None): Identifier for the currently hovered button.
+        """
         self.screen = screen
         self.players = players
         self.property = property_obj
@@ -22,9 +70,25 @@ class AuctionPopup:
         self.hovered_button = None
 
     def current_player(self):
+        """
+        Returns the player who is currently active in the auction.
+
+        Returns:
+            Player: The player whose turn it is to bid.
+        """
         return self.players[self.active_player_index]
 
     def draw(self):
+        """
+        Draws the auction popup window on the screen with:
+        - Title of the auction
+        - Current bidder name
+        - Current highest bid
+        - Input box for entering bids
+        - "Place Bid" and "Exit Auction" buttons
+
+        Only renders if the popup is marked as visible.
+        """
         if not self.visible:
             return
 
@@ -47,6 +111,14 @@ class AuctionPopup:
         self.draw_button(self.exit_button, "Exit Auction", "exit")
 
     def draw_button(self, rect, text, key):
+        """
+        Draws a button with label and styling, including hover highlighting.
+
+        Args:
+            rect (pygame.Rect): The rectangle defining the button's area.
+            text (str): The label to display on the button.
+            key (str): The identifier used to track hover interaction for this button.
+        """
         color = (150, 150, 150) if self.hovered_button == key else (100, 100, 100)
         pygame.draw.rect(self.screen, color, rect)
         pygame.draw.rect(self.screen, (255, 255, 255), rect, 2)
@@ -54,6 +126,19 @@ class AuctionPopup:
         self.screen.blit(label, (rect.x + 10, rect.y + 10))
 
     def handle_event(self, event):
+        """
+        Handles pygame events for the auction popup including mouse hover, clicks,
+        and keyboard input (for placing bids or exiting).
+
+        Args:
+            event (pygame.event.Event): The event triggered by pygame's event queue.
+
+        Side Effects:
+            - Updates input text from keyboard
+            - Advances auction turns
+            - Places or exits bids
+            - Updates visual button hover state
+        """
         if not self.visible:
             return
 
@@ -84,6 +169,24 @@ class AuctionPopup:
 
 
     def handle_bid(self):
+        """
+        Processes and validates the current player's bid, updating auction state accordingly.
+
+        Args:
+            None
+
+        Returns:
+            None
+
+        Raises:
+            ValueError: If a human player enters non-numeric bid input.
+
+        Side Effects:
+            - Updates the highest bid and bidder if valid.
+            - Logs auction events.
+            - Advances the auction to the next player.
+            - Ends the auction if conditions are met.
+        """
         try:
             player = self.current_player()
 
@@ -139,6 +242,19 @@ class AuctionPopup:
 
 
     def advance_turn(self):
+        """
+        Advances to the next eligible player in the auction turn order.
+
+        Args:
+            None
+
+        Returns:
+            None
+
+        Side Effects:
+            - Updates the active player index.
+            - Ends the auction if only one or no eligible players remain.
+        """
         active_players = [p for p in self.players if p not in self.exited and p.passed]
 
         if len(active_players) == 1 and self.highest_bidder:
@@ -168,6 +284,21 @@ class AuctionPopup:
 
 
     def end_auction(self):
+        """
+        Finalizes the auction and handles post-auction state.
+
+        Args:
+            None
+
+        Returns:
+            None
+
+        Side Effects:
+            - Transfers ownership of the property to the highest bidder (if any).
+            - Deducts the bid amount from the winner's balance.
+            - Logs auction results.
+            - Resets internal auction state variables.
+        """
         if self.highest_bidder:
             winner = self.highest_bidder
             self.property.owner = winner

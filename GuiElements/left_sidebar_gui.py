@@ -12,15 +12,45 @@ class LeftSidebar(PropertyTycoon):
     - A scrollable property list with property action buttons
 
     Includes support for mouse interaction, property selection, and event logging.
+
+    Args:
+        screen (pygame.Surface): The Pygame screen surface to render the sidebar.
+        game (PropertyTycoon): The main game logic object containing player and game state.
+        event_logger (function, optional): Optional function to log actions (e.g., sidebar log).
+
+    Attributes:
+        sidebar_width (int): The width of the sidebar.
+        sidebar_rect (pygame.Rect): The rectangle representing the sidebar's position and size.
+        bank_section (pygame.Rect): The rectangle for the bank section of the sidebar.
+        player_info_section (pygame.Rect): The rectangle for displaying the selected player’s information.
+        manage_property_button (pygame.Rect): The button for managing properties.
+        selected_property_name (str): The name of the currently selected property.
+        property_buttons (list): A list of button rectangles for managing properties.
+        active_popup (str): The currently active popup, if any.
+        popup_rect (pygame.Rect): The rectangle representing the properties management popup.
+        popup_buttons (dict): A dictionary of action buttons (e.g., build house, mortgage) in the popup.
+        just_scrolled (bool): A flag to indicate if the user has scrolled.
+        log_event (function): Function to log game events.
     """
 
     def __init__(self, screen, game, event_logger=None):
         """
-        Initialize the LeftSidebar layout and data.
+        Initializes the LeftSidebar layout and data.
 
         Args:
-            screen: The main Pygame surface to draw onto.
-            event_logger: Optional function to log actions (e.g., to a sidebar log).
+            screen (pygame.Surface): The main Pygame surface to render the sidebar.
+            game (PropertyTycoon): The main game logic object containing player and game state.
+            event_logger (function, optional): Optional function to log actions (e.g., sidebar log).
+
+        Returns:
+            None
+
+        Raises:
+            None
+
+        Side Effects:
+            - Sets up the layout for various sections of the sidebar (bank, player info, property management).
+            - Initializes the property management state and button configurations.
         """
         self.screen = screen
         self.width, self.height = screen.get_size()
@@ -59,7 +89,22 @@ class LeftSidebar(PropertyTycoon):
         self.log_event = event_logger if event_logger else print  
 
     def draw(self):
-        """Draw the entire left sidebar and its components."""
+        """
+        Draws the entire left sidebar and its components, including player info and property management options.
+
+        Args:
+            None
+
+        Returns:
+            None
+
+        Raises:
+            None
+
+        Side Effects:
+            - Renders the sidebar, player information, and the properties management popup if active.
+            - Dynamically updates button highlight based on mouse hover.
+        """
         pygame.draw.rect(self.screen, (50, 50, 50), self.sidebar_rect)
         pygame.draw.rect(self.screen, (0, 0, 0), self.sidebar_rect, 2)
 
@@ -85,7 +130,23 @@ class LeftSidebar(PropertyTycoon):
             self.draw_manage_properties_popup()
 
     def draw_manage_properties_popup(self):
-        """Render the scrollable list of properties and action buttons."""
+        """
+        Renders the scrollable list of properties and action buttons in the manage property popup.
+
+        Args:
+            None
+
+        Returns:
+            None
+
+        Raises:
+            None
+
+        Side Effects:
+            - Draws the properties list and their corresponding buttons.
+            - Displays a scrollbar if there are more properties than can fit in the visible area.
+            - Renders action buttons (build, mortgage, etc.) at the bottom of the popup.
+        """
 
         properties = [prop_object.name if not prop_object.mortgaged else "M - "+prop_object.name for prop_object in self.game.players[self.game.current_player_index].owned_properties]
         properties = [
@@ -156,7 +217,23 @@ class LeftSidebar(PropertyTycoon):
             self.screen.blit(label, (rect.x + 10, rect.y + 5))
 
     def highlight_button(self, button_rect, color, text):
-        """Render a button with hover effect."""
+        """
+        Renders a button with a hover effect.
+
+        Args:
+            button_rect (pygame.Rect): The rectangle representing the button's area.
+            color (tuple): The color of the button when not hovered.
+            text (str): The label to display on the button.
+
+        Returns:
+            None
+
+        Raises:
+            None
+
+        Side Effects:
+            - Draws the button with hover effects based on the mouse position.
+        """
         mouse_x, mouse_y = pygame.mouse.get_pos()
         hovered = button_rect.collidepoint(mouse_x, mouse_y)
         bg = color if hovered else (100, 100, 100)
@@ -167,7 +244,23 @@ class LeftSidebar(PropertyTycoon):
         self.screen.blit(label, (button_rect.x + 10, button_rect.y + 10))
 
     def handle_event(self, event):
-        """Handle mouse interaction for sidebar and property popup."""
+        """
+        Handles mouse interaction for sidebar and property popup.
+
+        Args:
+            event (pygame.event): The Pygame event to handle (e.g., mouse click or scroll).
+
+        Returns:
+            None
+
+        Raises:
+            None
+
+        Side Effects:
+            - Registers a mouse click on the manage property button or on a property button.
+            - Scrolls the properties list when the mouse wheel is used.
+            - Triggers property management actions like mortgage, sell, or build based on button clicks.
+        """
         if event.type == pygame.MOUSEBUTTONDOWN:
             x, y = event.pos
 
@@ -221,5 +314,19 @@ class LeftSidebar(PropertyTycoon):
             self.just_scrolled = True
 
     def toggle_popup(self, popup_type):
-        """Show or hide a popup menu in the sidebar."""
+        """
+        Toggles the visibility of a popup menu in the sidebar.
+
+        Args:
+            popup_type (str): The type of the popup to show or hide.
+
+        Returns:
+            None
+
+        Raises:
+            None
+
+        Side Effects:
+            - Toggles the active popup, either showing or hiding it based on its current state.
+        """
         self.active_popup = popup_type if self.active_popup != popup_type else None

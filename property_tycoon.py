@@ -22,9 +22,47 @@ class PropertyTycoon:
     This class manages the overall game state and switches between different screens
     such as the pregame setup, token selection, and the actual game board.
     It handles input, game flow, drawing of all components, and timing (for abridged mode).
+
+    Args:
+        width (int): The width of the game screen (default: 1200).
+        height (int): The height of the game screen (default: 750).
+
+    Attributes:
+        screen (pygame.Surface): The Pygame screen where the game is drawn.
+        state (str): Current game state ('pregame', 'token_selection', 'board').
+        running (bool): Flag to control whether the game is still running.
+        pregame_screen (PreGameScreen): Screen for pregame setup.
+        token_selection_screen (TokenSelectionScreen): Screen for selecting player tokens.
+        board (BoardGUI): Board GUI for rendering the game board.
+        elements (BoardElementsGUI): Elements to be rendered on the game board.
+        players (dict): Dictionary of players in the game.
+        game (Game): The Game logic instance.
+        dice (DiceGUI): Dice handling and rendering.
+        time_limit_seconds (int): Time limit for Abridged mode in seconds.
+        etc. 
     """
 
+
     def __init__(self, width=1200, height=750):
+        """
+        Initialize the game, including setup for the screen, UI components, sounds, and game state.
+
+        Args:
+            width (int): Width of the game window (default: 1200).
+            height (int): Height of the game window (default: 750).
+
+        Returns:
+            None
+
+        Raises:
+            pygame.error: If there is an error loading music or sound assets.
+
+        Side Effects:
+            - Initializes the Pygame window.
+            - Loads music and sound assets.
+            - Sets up game state variables and UI components.
+        """
+
         pygame.init()
         pygame.mixer.init()
 
@@ -108,15 +146,40 @@ class PropertyTycoon:
         self.last_input_time = time.time()
 
     def roll_and_play_next_turn(self):
+        """
+        Rolls the dice and advances to the next turn for the active player.
+
+        Args:
+            None
+
+        Returns:
+            None
+
+        Side Effects:
+            - Starts the dice roll animation.
+            - Updates the game state by advancing the turn for the active player.
+        """
+
         self.dice.start_roll_animation()
         die1, die2 = self.dice.get_dice_result()
         self.game.next_turn(self.game.players[self.game.current_player_index], die1, die2)
     
     def draw(self):
         """
-        Draw the appropriate screen depending on the current game state.
-        This method is called every frame.
+        Draws the appropriate screen based on the current game state.
+
+        Args:
+            None
+
+        Returns:
+            None
+
+        Side Effects:
+            - Renders the game screen, drawing the pregame, token selection, or game board.
+            - Handles rendering for additional popups like Jail, Auction, Bankruptcy, End Game, and Leave Game.
+            - If in Abridged mode, the remaining time is shown and updated.
         """
+
         if self.state == "pregame":
             self.pregame_screen.draw()
 
@@ -194,8 +257,19 @@ class PropertyTycoon:
 
     def handle_events(self):
         """
-        Handle all input events like mouse clicks, movement, and key presses.
+        Handles all user input events (mouse clicks, key presses) for the game.
+
+        Args:
+            None
+
+        Returns:
+            None
+
+        Side Effects:
+            - Responds to user input, including changing the game state, handling mouse events, and responding to timeouts.
+            - Calls relevant methods based on the current game state (e.g., "pregame", "token_selection", "board").
         """
+
         for event in pygame.event.get():
             # Detect user interaction to reset inactivity timer
             if event.type in (pygame.MOUSEBUTTONDOWN, pygame.MOUSEMOTION, pygame.KEYDOWN):
@@ -253,8 +327,19 @@ class PropertyTycoon:
 
     def start_token_selection(self):
         """
-        Transition from pregame setup to the token selection screen.
+        Transitions the game state from pregame to token selection, where players choose their tokens.
+
+        Args:
+            None
+
+        Returns:
+            None
+
+        Side Effects:
+            - Sets up the token selection screen for human and AI players.
+            - Changes the game state to "token_selection".
         """
+
         self.human_players = self.pregame_screen.num_human_players
         self.ai_players = self.pregame_screen.num_ai_players
 
@@ -263,9 +348,19 @@ class PropertyTycoon:
 
     def start_board_game(self):
         """
-        Start the main game after token selection is confirmed.
-        Initializes the board and game elements.
+        Starts the main game after token selection, initializing game elements and players.
+
+        Args:
+            None
+
+        Returns:
+            None
+
+        Side Effects:
+            - Initializes players, assigns tokens, and sets up the game board.
+            - Starts the main game loop and triggers events for the first turn.
         """
+
         self.players = self.token_selection_screen.get_selected_tokens()
         total_players = self.human_players + self.ai_players
         self.auction_popup = None
@@ -334,7 +429,23 @@ class PropertyTycoon:
 
     @staticmethod
     def load_players_from_file(filename="players.json"):
-        """Loads player names and tokens from a JSON file."""
+        """
+        Loads player names, tokens, and identities from a JSON file.
+
+        Args:
+            filename (str): Path to the player data JSON file (default: "players.json").
+
+        Returns:
+            tuple: A tuple containing three lists: player names, player tokens, player identities.
+
+        Raises:
+            FileNotFoundError: If the player data file does not exist.
+
+        Side Effects:
+            - Reads player data from the specified file.
+            - Returns default player data if the file does not exist.
+        """
+
         filepath = os.path.join(os.path.dirname(__file__), filename)
 
         if not os.path.exists(filepath):
@@ -349,6 +460,20 @@ class PropertyTycoon:
             return player_names, player_tokens, player_identities
     
     def save_players_to_json(self, player_data, filename="players.json"):
+        """
+        Saves the current player data to a JSON file.
+
+        Args:
+            player_data (dict): Player data to save (names, tokens, identities).
+            filename (str): Path to the player data JSON file (default: "players.json").
+
+        Returns:
+            None
+
+        Side Effects:
+            - Saves the player data to the specified file in JSON format.
+        """
+
         with open(filename, "w") as f:
             json.dump({"players": player_data}, f, indent=4)
         print("Player data saved to players.json")
@@ -356,10 +481,19 @@ class PropertyTycoon:
 
     def draw_tokens_on_board(self):
         """
-        Draw player tokens on the board based on their current positions.
-        - Solo tokens are offset to avoid blocking tile content
-        - Multiple tokens are laid out in a grid to avoid overlap
+        Draws the player tokens on the game board based on their current positions.
+
+        Args:
+            None
+
+        Returns:
+            None
+
+        Side Effects:
+            - Renders player tokens on the board in appropriate positions.
+            - Ensures that tokens are correctly placed based on the number of players in the tile.
         """
+
         min_token_size = 24
         max_token_ratio = 0.4 
         tokens_per_tile = {}
@@ -420,36 +554,111 @@ class PropertyTycoon:
 
 
     def handle_board_events(self, event):
-        """Handle hover highlighting for board spaces."""
+        """
+        Handles hover highlighting for board spaces when the mouse is moved.
+
+        Args:
+            event (pygame.event): The event object to process.
+
+        Returns:
+            None
+
+        Side Effects:
+            - Updates the highlight state for board spaces based on mouse movement.
+        """
         if event.type == pygame.MOUSEMOTION:
             self.update_hover(event.pos)
 
     def update_hover(self, pos):
-        """Update hover state based on current mouse position."""
+        """
+        Updates the hover state for the board based on the current mouse position.
+
+        Args:
+            pos (tuple): The current position of the mouse (x, y).
+
+        Returns:
+            None
+
+        Side Effects:
+            - Highlights the space currently hovered by the mouse.
+        """
+
         hovered_space = self.get_hovered_space(pos)
         self.reset_highlights()
         if hovered_space is not None:
             self.board.spaces[hovered_space].set_highlight(True)
 
     def get_hovered_space(self, pos):
-        """Return index of hovered space if any, else None."""
+        """
+        Returns the index of the hovered space on the board.
+
+        Args:
+            pos (tuple): The current position of the mouse (x, y).
+
+        Returns:
+            int or None: The index of the hovered space, or None if no space is hovered.
+
+        Side Effects:
+            - Checks the mouse position and compares it to the spaces on the board.
+        """
         for index, space in enumerate(self.board.spaces):
             if space.rect.collidepoint(pos):
                 return index
         return None
 
     def reset_highlights(self):
-        """Remove all highlights from board spaces."""
+        """
+        Removes all highlights from the board spaces.
+
+        Args:
+            None
+
+        Returns:
+            None
+
+        Side Effects:
+            - Resets the highlight state for all board spaces.
+        """
+
         for space in self.board.spaces:
             space.set_highlight(False)
 
     def create_bankruptcy_popup(self, player, amount_due, creditor):
+        """
+        Creates and returns a bankruptcy popup for a player who has insufficient funds.
+
+        Args:
+            player (Player): The player who is bankrupt.
+            amount_due (int): The amount due that the player cannot pay.
+            creditor (Player): The creditor player who is owed money.
+
+        Returns:
+            BankruptcyPopup: The created BankruptcyPopup object.
+
+        Side Effects:
+            - Initializes and displays the bankruptcy popup.
+        """
+
         from GuiElements.bankruptcy_gui import BankruptcyPopup
         popup = BankruptcyPopup(self.screen, player, amount_due, creditor)
         self.bankruptcy_popup = popup
         return popup
         
     def trigger_end_game_popup(self, winner_name):
+        """
+        Triggers the end game popup to show the winner's name.
+
+        Args:
+            winner_name (str): The name of the winner.
+
+        Returns:
+            None
+
+        Side Effects:
+            - Displays the end game popup on the screen.
+            - Plays the win sound if available.
+        """
+
         self.end_game_popup = EndGamePopup(self.screen, winner_name)
 
         if self.win_sound:
@@ -458,7 +667,20 @@ class PropertyTycoon:
 
 
     def run(self):
-        """Main game loop that keeps the game running and updating."""
+        """
+        The main game loop that keeps the game running and updating.
+
+        Args:
+            None
+
+        Returns:
+            None
+
+        Side Effects:
+            - Continuously handles events, updates the game state, and redraws the screen.
+            - Manages turn-based logic, time-based conditions (for Abridged mode), and player actions.
+        """
+
         while self.running:
             self.handle_events()
             self.dice.update()

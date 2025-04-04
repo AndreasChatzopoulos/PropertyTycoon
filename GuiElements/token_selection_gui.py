@@ -6,17 +6,58 @@ class TokenSelectionScreen:
     """
     Provides an interactive interface for human players to select their tokens.
     Automatically assigns tokens to AI players once human selections are confirmed.
+
+    Args:
+        screen (pygame.Surface): The main game screen to render UI on.
+        human_players (int): Number of human players.
+        ai_players (int): Number of AI players.
+
+    Attributes:
+        screen (pygame.Surface): The main game screen to render the UI.
+        width (int): Width of the screen.
+        height (int): Height of the screen.
+        font (pygame.font.Font): Font used for text rendering.
+        allowed_tokens (list): List of token names allowed in the game.
+        assets_folder (str): Folder path where token images are stored.
+        token_images (dict): A dictionary of token names mapped to their respective images.
+        available_tokens (list): List of tokens that are available for selection.
+        human_players (int): Number of human players.
+        ai_players (int): Number of AI players.
+        total_players (int): Total number of players (human + AI).
+        selected_tokens (dict): A dictionary mapping players to selected tokens.
+        confirmed_players (set): A set tracking which players have confirmed their selection.
+        current_player (int): The number of the current player selecting a token.
+        selected_token (str, optional): The token currently selected by the player.
+        confirm_button_rect (pygame.Rect): Rectangle for the confirm/start button.
+        click_sound (pygame.mixer.Sound): Sound played when a button is clicked.
+        background (pygame.Surface): The background image for the screen.
+        player_names (dict): A dictionary mapping player numbers to player names.
+        name_input_active (bool): Flag indicating if the name input field is active.
+        name_input_text (str): Text entered by the player in the name input field.
+        name_input_rect (pygame.Rect): Rectangle for the name input field.
     """
 
     def __init__(self, screen, human_players, ai_players):
         """
-        Initialize the selection screen.
+        Initializes the selection screen.
 
         Args:
             screen (pygame.Surface): The main game screen to render UI on.
             human_players (int): Number of human players.
             ai_players (int): Number of AI players.
+
+        Returns:
+            None
+
+        Raises:
+            None
+
+        Side Effects:
+            - Loads the token images from the assets folder.
+            - Initializes player names based on the number of human and AI players.
+            - Sets up initial UI elements such as the background, font, and button positions.
         """
+
         self.screen = screen
         self.width, self.height = screen.get_size()
         self.font = pygame.font.Font(None, 36)
@@ -62,11 +103,19 @@ class TokenSelectionScreen:
 
     def load_token_images(self):
         """
-        Load token images from the assets folder.
+        Loads token images from the assets folder.
 
         Returns:
-            dict: token_name -> pygame.Surface
+            dict: A dictionary mapping token names (str) to their corresponding Pygame surfaces (pygame.Surface).
+
+        Raises:
+            None
+
+        Side Effects:
+            - Loads image files for each token from the assets folder.
+            - Scales the images to 80x80 pixels.
         """
+
         token_images = {}
         for file in os.listdir(self.assets_folder):
             if file.endswith(".png"):
@@ -84,7 +133,22 @@ class TokenSelectionScreen:
         - Name input field
         - Confirm/start button
         - List of selected players
+
+        Args:
+            None
+
+        Returns:
+            None
+
+        Raises:
+            None
+
+        Side Effects:
+            - Draws the background, overlay, and UI components on the screen.
+            - Renders each available token with hover and selection effects.
+            - Updates the display for player name input and selected tokens.
         """
+
         self.screen.blit(self.background, (0, 0))
 
         overlay = pygame.Surface((self.width, self.height), pygame.SRCALPHA)
@@ -147,9 +211,21 @@ class TokenSelectionScreen:
         """
         Handle mouse clicks and keyboard input for token selection and name entry.
 
+        Args:
+            event (pygame.event.Event): A Pygame event object.
+
         Returns:
             str or None: "confirmed" if all players selected, else None.
+
+        Raises:
+            None
+
+        Side Effects:
+            - Detects player clicks on tokens or buttons to select tokens or confirm selection.
+            - Handles keyboard input for entering player names.
+            - Updates the selection state based on user input.
         """
+
         if event.type == pygame.MOUSEBUTTONDOWN:
             x, y = event.pos
             self.click_sound.play()
@@ -189,6 +265,23 @@ class TokenSelectionScreen:
 
 
     def select_token(self, token):
+        """
+        Select a token for the current player.
+
+        Args:
+            token (str): The name of the token being selected.
+
+        Returns:
+            None
+
+        Raises:
+            None
+
+        Side Effects:
+            - Adds the selected token to the `selected_tokens` dictionary for the current player.
+            - Activates the name input field for the player.
+        """
+
         if token in self.allowed_tokens and token not in self.selected_tokens.values():
             self.selected_tokens[self.current_player] = token
             self.selected_token = token
@@ -201,7 +294,22 @@ class TokenSelectionScreen:
         """
         Confirm the selected token and name for the current player.
         Moves to the next player or assigns AI tokens once all human players are done.
+
+        Args:
+            None
+
+        Returns:
+            None
+
+        Raises:
+            None
+
+        Side Effects:
+            - Marks the current player as confirmed.
+            - Updates the name of the player if it is not provided.
+            - If all human players are confirmed, AI players' tokens are assigned automatically.
         """
+
         if self.current_player in self.confirmed_players:
             return
 
@@ -232,7 +340,21 @@ class TokenSelectionScreen:
     def assign_ai_tokens(self):
         """
         Randomly assigns remaining tokens to AI players.
+
+        Args:
+            None
+
+        Returns:
+            None
+
+        Raises:
+            None
+
+        Side Effects:
+            - Assigns a random token to each AI player.
+            - Marks each AI player's token selection as confirmed.
         """
+
         ai_start = self.human_players + 1
         for ai_player in range(ai_start, self.total_players + 1):
             remaining = set(self.allowed_tokens) - set(self.selected_tokens.values())
@@ -243,8 +365,19 @@ class TokenSelectionScreen:
 
     def get_selected_tokens(self):
         """
+        Returns the selected tokens for all players.
+
+        Args:
+            None
+
         Returns:
-            dict: player_number -> token_name
+            dict: A dictionary mapping player numbers (int) to selected token names (str).
+
+        Raises:
+            None
+
+        Side Effects:
+            - None
         """
         return self.selected_tokens
 
@@ -254,9 +387,20 @@ class TokenSelectionScreen:
 
         Args:
             button_rect (pygame.Rect): Rect of the button.
-            color (tuple): Base color of button.
+            color (tuple): Base color of the button.
             text (str): Button label.
+
+        Returns:
+            None
+
+        Raises:
+            None
+
+        Side Effects:
+            - Renders the button with a color change on hover.
+            - Displays the label text centered inside the button.
         """
+
         mouse_x, mouse_y = pygame.mouse.get_pos()
         is_hovered = button_rect.collidepoint(mouse_x, mouse_y)
 

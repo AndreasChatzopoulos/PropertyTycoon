@@ -10,15 +10,51 @@ class RightSidebar(PropertyTycoon):
     - A scrolling event log panel
     - Functional buttons (Buy Property, Trade, End Turn, Save Game, Leave Game)
     - A modal-style Trade Menu window
+
+    Args:
+        screen (pygame.Surface): The main Pygame surface to render onto.
+        game (PropertyTycoon): The game object that holds the current game state and logic.
+        dice (DiceGUI): The DiceGUI object used for rolling dice.
+
+    Attributes:
+        screen (pygame.Surface): The Pygame screen surface to render the sidebar UI.
+        width (int): Width of the screen.
+        height (int): Height of the screen.
+        sidebar_rect (pygame.Rect): The rectangle defining the sidebar dimensions.
+        game_events_panel (pygame.Rect): The panel to display game events.
+        event_log (list): The list of event log messages.
+        font (pygame.font.Font): The font used for rendering text.
+        scroll_offset (int): The offset used for scrolling the event log.
+        buy_property_button (pygame.Rect): The button to buy property.
+        trade_button (pygame.Rect): The button to open the trade menu.
+        end_turn_button (pygame.Rect): The button to end the current player's turn.
+        save_game_button (pygame.Rect): The button to save the game.
+        leave_game_button (pygame.Rect): The button to leave the game.
+        show_trade_menu (bool): Whether the trade menu is currently visible.
+        trade_menu_rect (pygame.Rect): The rectangle defining the trade menu's dimensions.
+        close_trade_button (pygame.Rect): The button to close the trade menu.
+        game (PropertyTycoon): The game object.
+        dice (DiceGUI): The DiceGUI object.
     """
-    
 
     def __init__(self, screen, game, dice):
         """
         Initialize the sidebar layout, buttons, and event log.
 
         Args:
-            screen: The main Pygame surface to render onto.
+            screen (pygame.Surface): The Pygame surface to render onto.
+            game (PropertyTycoon): The game object that holds the current game state and logic.
+            dice (DiceGUI): The DiceGUI object used for rolling dice.
+
+        Returns:
+            None
+
+        Raises:
+            None
+
+        Side Effects:
+            - Initializes the sidebar layout, buttons, and event log.
+            - Sets up the UI for the sidebar panel, buttons, and trade menu.
         """
         self.screen = screen
         self.width, self.height = screen.get_size()
@@ -50,6 +86,19 @@ class RightSidebar(PropertyTycoon):
     def draw(self):
         """
         Renders the sidebar UI, including event log, buttons, and the trade menu if active.
+
+        Args:
+            None
+
+        Returns:
+            None
+
+        Raises:
+            None
+
+        Side Effects:
+            - Renders the sidebar background, event log, buttons, and trade menu.
+            - Updates the visual state of the sidebar UI based on the current game state.
         """
         # Draw sidebar background
         pygame.draw.rect(self.screen, (50, 50, 50), self.sidebar_rect)
@@ -94,12 +143,19 @@ class RightSidebar(PropertyTycoon):
         Helper function to wrap text into multiple lines to fit in a defined width.
 
         Args:
-            text: The original string.
-            font: Font used to render text.
-            max_width: Maximum width in pixels allowed for each line.
+            text (str): The original string.
+            font (pygame.font.Font): Font used to render text.
+            max_width (int): Maximum width in pixels allowed for each line.
 
         Returns:
-            List of rendered surfaces for each wrapped line.
+            list: List of rendered surfaces for each wrapped line.
+
+        Raises:
+            None
+
+        Side Effects:
+            - Breaks the text into multiple lines to ensure it fits within the specified width.
+            - Returns a list of text surfaces ready to be rendered.
         """
         if not text:
             return []
@@ -122,9 +178,19 @@ class RightSidebar(PropertyTycoon):
         Draws a button with hover effect and label.
 
         Args:
-            button_rect: Button position/size (pygame.Rect)
-            color: Button background color on hover
-            text: Label to display
+            button_rect (pygame.Rect): Button position/size (pygame.Rect).
+            color (tuple): Button background color on hover.
+            text (str): Label to display inside the button.
+
+        Returns:
+            None
+
+        Raises:
+            None
+
+        Side Effects:
+            - Renders the button with hover effects.
+            - Updates the visual state of the button based on mouse hover status.
         """
         mouse_x, mouse_y = pygame.mouse.get_pos()
         is_hovered = button_rect.collidepoint(mouse_x, mouse_y)
@@ -141,6 +207,18 @@ class RightSidebar(PropertyTycoon):
     def draw_trade_menu(self):
         """
         Renders a centered trade menu window with a close button.
+
+        Args:
+            None
+
+        Returns:
+            None
+
+        Raises:
+            None
+
+        Side Effects:
+            - Renders the trade menu window with a close button in the center.
         """
         pygame.draw.rect(self.screen, (220, 220, 220), self.trade_menu_rect)
         pygame.draw.rect(self.screen, (0, 0, 0), self.trade_menu_rect, 2)
@@ -155,7 +233,18 @@ class RightSidebar(PropertyTycoon):
         Handles interaction with sidebar buttons and scrolling the event log.
 
         Args:
-            event: Pygame event object.
+            event (pygame.event): The Pygame event object.
+
+        Returns:
+            None
+
+        Raises:
+            None
+
+        Side Effects:
+            - Responds to mouse clicks on buttons (Buy Property, Trade, End Turn, etc.).
+            - Handles scroll actions for the event log panel using the mouse wheel.
+            - Opens or closes the trade menu based on user interaction.
         """
         if event.type == pygame.MOUSEBUTTONDOWN:
             x, y = event.pos
@@ -225,7 +314,16 @@ class RightSidebar(PropertyTycoon):
         Adds a message to the event log.
 
         Args:
-            message: String to display in the log panel.
+            message (str): The message to be added to the event log.
+
+        Returns:
+            None
+
+        Raises:
+            None
+
+        Side Effects:
+            - Adds the specified message to the event log for display in the game UI.
         """
         self.event_log.append(message)
 
@@ -233,7 +331,16 @@ class RightSidebar(PropertyTycoon):
         """
         Returns a function that can be passed around for logging events.
 
+        Args:
+            None
+
         Returns:
-            Callable log_event function
+            Callable: The `log_event` function that logs events to the event log.
+
+        Raises:
+            None
+
+        Side Effects:
+            - Provides access to the `log_event` function for external use (e.g., in other parts of the game).
         """
         return self.log_event 

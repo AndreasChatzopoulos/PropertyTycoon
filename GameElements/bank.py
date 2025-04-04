@@ -2,14 +2,44 @@ from GameElements.property import Property
 from collections import deque
 
 
-class Bank:
+class Bank: 
+    """
+    Represents the central Bank in the monolpoly duplicated style game. 
+
+    It is responsible for managing in game currency, property ownership,
+    and transactions between players and the bank, this incudes: 
+
+    - Initialising all properties and storing them by position.
+    - Conducting property auctions and validating player bids.
+    - The mortgaging and un-mortgaging of properties.
+    - The building and selling of houses under colour group building rules.
+    - Buying properties or houses back from the player when needed. 
+
+    Attributes: 
+    
+            balance (int): The bank's current balance.
+            properties (dict[int, property]): A dictionary mapping of board positions to properties available in the game.
+    """
 
     def __init__(self):
+        """
+        Initialises the instance of the Bank. 
+
+        Sets balance to £50,000 and initialises the properties available in the game.
+        Each property is represented by a tuple containing its position, name, price, rent, house cost, and group.
+        The properties are stored in a dictionary with the position as the key and a Property object as the value.
+        """ 
         self.balance = 50000
         self.properties = {}
         self.initialize_properties()
 
+
     def initialize_properties(self):
+        """
+        Initializes the properties available in the game. Each property is represented by a tuple containing its position, name, price, rent, house cost, and group.
+        The properties are stored in a dictionary with the position as the key and a Property object as the value.
+        The properties are initialized with their respective prices, rents, house costs, and groups.
+        """
         property_data = [
             (2, "The Old Creek", 60, [2, 10, 30, 90, 160, 250], 50, "Brown"),
             (4, "Gangsters Paradise", 60, [4, 20, 60, 180, 320, 450], 50, "Brown"),
@@ -46,8 +76,18 @@ class Bank:
             self.properties[position] = Property(*data)
 
     def auction_property(self, auction_property, players):
-        """Conducts a fair auction with proper bidding rounds."""
-        """Auction should only start if at least 1 other player has passed go"""
+        """"
+        Carries out an auction for unpurchased property among eligible players. 
+
+        Auction is only initiated if more than one player has passed GO (player.passed = True).
+        Eligible players (with non-negative balance) participate in bidding rounds.
+        Proceeding via a bid_property method, the highest bidder winning the auction. 
+        The winning players balance is reduced by final bid amount, and property is transferred to them. 
+
+        Args: 
+            auction_property (Property): The property being auctioned.
+            players (list[Player]): List of players participating in the auction.
+        """
         #count number of players who have player.passed = True
         if [player.passed for player in players].count(True) <= 1:        
             print("Auction cannot start because no other player has passed GO.")
@@ -66,7 +106,36 @@ class Bank:
         print(f"🎉 {highest_bidder.name} won {auction_property.name} for £{highest_bid}")
 
     def bid_property(self, active_bidders, property, highest_bid=0):
+        """
+        Conducts the bidding process for a property auction. Players take turns to bid until only one player remains.
+
+        Players take turns bidding, a player may place a bid higher than the current highest bid or exit the auction. 
+        The bidding continues until one player remains. Bot generate bids automatically, while human players input is prompted. 
+        The function returns the final winning player and their bid. 
+
+        Args: 
+            active_bidders (list[Player]): List of players participating in the auction.
+            property (Property): The property being auctioned.
+            highest_bid (int): The current highest bid. Defaults to 0.
+
+        Returns: 
+            tuple: The winning player and their bid amount.
+        """
         def valid_bid(bid, player):
+            """
+            Determines if the bid is valid. 
+            
+            Function checks if a bid is valid if it is a number, greater than the current highest bid, and less than or equal to the player's balance.
+            If the bid is the string "exit", the player exits the auction.
+
+            Args: 
+                bid (str): The bid input from the player.
+                player (Player): The player making the bid.
+                highest_bid (int): The current highest bid.
+
+            Returns: 
+                bool: True if the bid is valid, False otherwise.
+            """
             if bid.lower() == "exit":
                 return True
             try:
@@ -119,6 +188,20 @@ class Bank:
 
 
     def sell_property_to_the_bank(self, plr, sold_property):
+        """
+        Allows player to sell one of their properties back to the bank. 
+
+        Property must be owned by the player and have no houses built on it. If property is mortgaged, player receives 
+        half it's value, otherwise the full value. 
+        The property is then removed from the player's ownership and returned to the bank. 
+
+        Args: 
+            plr (Player): The player selling the property.
+            sold_property (Property): The property being sold.
+
+        Returns: 
+            str: A message indicating the result of the sale.
+        """
         if sold_property not in plr.owned_properties:
             return f"{sold_property.name} is not owned by {plr.name}."
 
@@ -144,7 +227,20 @@ class Bank:
 
 
     def sell_houses_to_the_bank(self, plr, selected_property):
-        """Allows the player to sell one house to the bank for half the build cost."""
+        """
+        Allows a player to sell one house from a property back to the bank for half the house build cost.
+
+        The property must have at least one house, and the selling must follow the rule that houses
+        across the group must be evenly distributed (no property in the group can have more than one
+        house difference from another).
+
+        Args:
+            plr (Player): The player selling the house.
+            selected_property (Property): The property from which the house will be sold.
+
+        Returns:
+            str: A message indicating the result of the transaction, either success or an explanation for failure.
+        """
         if selected_property.houses == 0:
             message = f"No houses available to sell on {selected_property.name}."
             print(message)
@@ -172,7 +268,19 @@ class Bank:
 
 
     def mortgage_property(self, plr, selected_property):
-        """Allows the player to mortgage a property to raise funds"""
+        """
+        Allows player to mortgage a property to the bank.
+
+        Property must be owned by the player and have no houses built on it or be mortgaged already. 
+        Mortgaging the property gives the player half the value of the purchase price in cash. 
+
+        Args:
+            plr (Player): The player mortgaging the property.
+            selected_property (Property): The property being mortgaged.
+        
+        Returns: 
+            str: A message indicating the result of the mortgage, either success or an explanation for failure.
+        """
         if selected_property.mortgaged:
             print(f"{plr.name} tried to mortgage {selected_property.name} to the bank but it's already mortgaged.")
             return (f"{plr.name} tried to mortgage {selected_property.name} to the bank but it's already mortgaged.")
@@ -205,7 +313,21 @@ class Bank:
         return (f"{plr.name} unmortgaged {selected_property.name} .")
 
 
-    def build(self, number_of_houses, selected_property, plr):  # MAYBE SHOULD BE IN PROPERTY
+    def build(self, number_of_houses, selected_property, plr):  
+        """
+        Allows a player to build houses on a property they own, enforcing the game rules for balanced building.
+
+        The function checks for ownership of a completed colour set, sufficient funds, and house symmetry,
+        and ensures the maximum number of houses is not exceeded per property (5).
+
+        Args:
+            number_of_houses (int): The number of houses to build.
+            selected_property (Property): The property on which to build houses.
+            plr (Player): The player building the houses.
+        
+        Returns: 
+            str: A message indicating the result of the building attempt, either success or an explanation for failure.
+        """
         total_cost = number_of_houses * selected_property.house_cost
 
         if not selected_property.check_completion():
@@ -235,7 +357,18 @@ class Bank:
             return (f"{selected_property.owner.name} built {number_of_houses} house(s) on {selected_property.name}")
 
     def pay_player(self, player, amount):
-        """Pays a player the specified amount."""
+        """
+        Pays a player a specified amount from the bank’s balance.
+
+        If the bank has sufficient funds, the amount is transferred directly to the player.
+        Otherwise, a bankruptcy handling process is triggered (if implemented).
+
+        Args:
+            player (Player): The player to receive the payment.
+            amount (int): The amount of money to pay.
+
+
+        """
         if self.balance >= amount:
             self.balance -= amount
             player.balance += amount
@@ -244,8 +377,18 @@ class Bank:
             print(f"{self.name} doesn’t have enough money to pay £{amount}! Selling assets...")
             self.avoid_bankruptcy(amount, player)
 
+
     def receive_payment(self, player, amount):
-        """Receives payment from a player."""
+        """
+        Receives a payment from a player and adds it to the bank's balance.
+
+        If the player has sufficient funds, the amount is deducted from the player and added to the bank.
+        If the player cannot afford the payment, the bankruptcy process is triggered.
+
+        Args:
+            player (Player): The player who is making the payment.
+            amount (int): The amount of money the player needs to pay.
+        """
         if player.balance >= amount:
             self.balance += amount
             player.balance -= amount
@@ -253,3 +396,4 @@ class Bank:
         else:
             print(f"{player.name} doesn’t have enough money to pay £{amount}! Selling assets...")
             player.avoid_bankruptcy(amount, self)
+

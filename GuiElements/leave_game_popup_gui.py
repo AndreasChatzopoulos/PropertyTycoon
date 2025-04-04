@@ -1,7 +1,45 @@
 import pygame
 
 class LeaveGamePopup:
+    """
+    Manages the "Leave Game" popup, allowing players to vote on whether another player can leave the game.
+
+    This class handles the process of voting whether a player can leave the game. It presents the voting 
+    options to the players in sequence and updates the game state based on the votes.
+
+    Args:
+        screen (pygame.Surface): The Pygame surface where the popup will be drawn.
+        leaver (Player): The player who wants to leave the game.
+        players (list[Player]): List of all players in the game, excluding the leaver.
+        game (Game): The game instance that holds the game logic.
+
+    Attributes:
+        votes (dict): Dictionary holding the votes for each player.
+        current_voter_index (int): Index tracking which player's vote is being processed.
+        visible (bool): Flag indicating if the popup is visible.
+        yes_button (pygame.Rect): The "Yes" vote button's rectangle.
+        no_button (pygame.Rect): The "No" vote button's rectangle.
+    """
     def __init__(self, screen, leaver, players, game):
+        """
+        Initializes the LeaveGame popup and sets up the necessary buttons, votes, and layout.
+
+        Args:
+            screen (pygame.Surface): The Pygame surface where the popup will be drawn.
+            leaver (Player): The player who wants to leave the game.
+            players (list[Player]): List of players in the game, excluding the leaver.
+            game (Game): The game instance that holds the game logic.
+
+        Returns:
+            None
+
+        Raises:
+            None
+
+        Side Effects:
+            - Sets up the popup rectangle and button positions.
+            - Initializes the voting system.
+        """
         self.screen = screen
         self.game = game
         self.leaver = leaver
@@ -17,6 +55,22 @@ class LeaveGamePopup:
         self.no_button = pygame.Rect(self.popup_rect.centerx + 20, self.popup_rect.bottom - 80, 100, 40)
 
     def draw(self):
+        """
+        Draws the LeaveGame popup and the voting buttons, updating the visual elements for the current state.
+
+        Args:
+            None
+
+        Returns:
+            None
+
+        Raises:
+            None
+
+        Side Effects:
+            - Renders the popup window with the vote buttons and messages.
+            - Dynamically updates the button colors based on mouse hover.
+        """
         if not self.visible:
             return
 
@@ -46,6 +100,22 @@ class LeaveGamePopup:
 
 
     def handle_event(self, event):
+        """
+        Handles user input events such as mouse clicks for the voting buttons.
+
+        Args:
+            event (pygame.event): The Pygame event to handle (e.g., mouse button clicks).
+
+        Returns:
+            None
+
+        Raises:
+            None
+
+        Side Effects:
+            - Registers a vote for the current player based on their selection.
+            - Calls `vote()` to update the voting process.
+        """
         if not self.visible:
             return
 
@@ -58,6 +128,23 @@ class LeaveGamePopup:
                 self.vote(False)
 
     def vote(self, approved):
+        """
+        Records the vote of the current player and moves on to the next player, or ends the voting process.
+
+        Args:
+            approved (bool): True if the player voted "Yes", False if they voted "No".
+
+        Returns:
+            None
+
+        Raises:
+            None
+
+        Side Effects:
+            - Updates the votes dictionary with the player's decision.
+            - If a player votes "No", the leaver remains in the game and the process ends.
+            - If all players approve, the leaver is removed from the game and the popup is closed.
+        """
         voter = self.current_voter()
         self.votes[voter] = approved
 
@@ -74,4 +161,19 @@ class LeaveGamePopup:
             self.game.remove_player(self.leaver)
 
     def current_voter(self):
+        """
+        Returns the current player who is casting their vote.
+
+        Args:
+            None
+
+        Returns:
+            Player: The player who is currently voting.
+
+        Raises:
+            None
+
+        Side Effects:
+            - Returns the player at the current voting index.
+        """
         return self.players[self.current_voter_index]

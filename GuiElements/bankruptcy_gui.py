@@ -1,7 +1,41 @@
 import pygame
 
 class BankruptcyPopup:
+    """
+    Handles the GUI for bankruptcy resolution in the game.
+
+    Displays a popup window when a player cannot meet a payment, allowing them to mortgage properties, 
+    sell houses, or sell properties to raise funds. The popup also supports paying off debt or declaring 
+    bankruptcy. Interacts directly with the player, bank, and potentially a creditor.
+
+    Args:
+        screen (pygame.Surface): The Pygame screen where the popup is rendered.
+        player (Player): The player who is attempting to resolve bankruptcy.
+        amount_due (int): The amount the player must pay to avoid bankruptcy.
+        creditor (Player or None): The recipient of the funds, either another player or the bank.
+
+    Attributes:
+        visible (bool): Whether the popup is currently displayed.
+        selected_property (Property | None): The currently selected property for action.
+        property_rects (list): Mapped property rectangles for click detection.
+        scroll_offset (int): The current scroll offset for the property list.
+        max_scroll (int): The maximum scroll value for the property list.
+        buttons (dict): A dictionary mapping button actions to their screen Rects.
+        colors (dict): Centralized color definitions for UI elements.
+    """
     def __init__(self, screen, player, amount_due, creditor=None):
+        """
+        Initializes the bankruptcy popup interface.
+
+        Args:
+            screen (pygame.Surface): The surface to render the popup on.
+            player (Player): The player who is in bankruptcy.
+            amount_due (int): The amount the player must pay.
+            creditor (Player or None): The player or bank to whom the debt is owed.
+
+        Returns:
+            None
+        """
         self.screen = screen
         self.player = player
         self.amount_due = amount_due
@@ -36,6 +70,18 @@ class BankruptcyPopup:
         }
 
     def draw(self):
+        """
+        Renders the bankruptcy popup, property list, and actionable buttons.
+
+        Args:
+            None
+
+        Returns:
+            None
+
+        Side Effects:
+            Updates the popup visuals on the screen.
+        """
         if not self.visible:
             return
 
@@ -171,6 +217,18 @@ class BankruptcyPopup:
 
 
     def handle_event(self, event):
+        """
+        Handles user input and interaction with the popup interface.
+
+        Args:
+            event (pygame.Event): A pygame event from the event loop.
+
+        Returns:
+            None
+
+        Side Effects:
+            May trigger scrolling, button presses, or property selection.
+        """
         if not self.visible:
             return
 
@@ -205,6 +263,22 @@ class BankruptcyPopup:
                 self.scroll_offset = min(self.max_scroll, self.scroll_offset + self.scroll_speed)
 
     def handle_button_click(self, key):
+        """
+        Executes logic tied to a specific action button (e.g., mortgage, sell, pay, declare bankruptcy).
+
+        Args:
+            key (str): The identifier of the button/action to handle.
+
+        Returns:
+            None
+
+        Raises:
+            AttributeError: If expected attributes are missing on the player or property.
+            ValueError: If any validations on the property or player's ability to act fail.
+
+        Side Effects:
+            Modifies player state (balance, ownership), logs events, and updates the popup.
+        """
         if key in ["mortgage", "sell_house", "sell_property"] and not self.selected_property:
              print("Error: No property selected for action.")
              return
@@ -267,6 +341,15 @@ class BankruptcyPopup:
 
 
     def player_has_options(self):
+        """
+        Checks whether the player has any available financial options (e.g., sell/mortgage/sell houses).
+
+        Args:
+            None
+
+        Returns:
+            bool: True if any financial recovery options exist; False otherwise.
+        """
         for prop in self.player.owned_properties:
             if hasattr(prop, 'houses') and prop.houses > 0:
                 return True
